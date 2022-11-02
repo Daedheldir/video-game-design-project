@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EntityPawn.h"
+#include <Blueprint/UserWidget.h>
+#include "../UI/Widgets/ShipSelectionUserWidget.h"
 
 // Sets default values
 AEntityPawn::AEntityPawn()
@@ -17,19 +19,20 @@ AEntityPawn::AEntityPawn()
 	GetMovementComponent()->bSnapToPlaneAtStart = true;
 	GetMovementComponent()->SetUpdatedComponent(this->GetRootComponent());
 
-	shipSelectionWidget = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Ship Selection Widget"));
+	shipSelectionWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Selection Widget Component"));
 	shipSelectionWidget->SetupAttachment(shipStaticMesh);
-	shipSelectionWidget->SetVisibility(false);
 }
 
 void AEntityPawn::SetSelected()
 {
-	shipSelectionWidget->SetVisibility(true);
+	UShipSelectionUserWidget* selectionWidget = Cast<UShipSelectionUserWidget>(shipSelectionWidget->GetWidget());
+	selectionWidget->PlaySelectedAnimation();
 }
 
 void AEntityPawn::SetDeselected()
 {
-	shipSelectionWidget->SetVisibility(false);
+	UShipSelectionUserWidget* selectionWidget = Cast<UShipSelectionUserWidget>(shipSelectionWidget->GetWidget());
+	selectionWidget->PlayUnselectedAnimation();
 }
 
 void AEntityPawn::CommandMoveTo(const FVector& destination) {
@@ -44,6 +47,8 @@ UPawnMovementComponent* AEntityPawn::GetMovementComponent() const {
 void AEntityPawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SetDeselected();
 }
 
 // Called every frame

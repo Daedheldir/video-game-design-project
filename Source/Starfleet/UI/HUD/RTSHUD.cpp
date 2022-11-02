@@ -12,17 +12,31 @@ void ARTSHUD::DrawHUD()
 			CurrentSelectionPosition.X - InitialSelectionPoint.X,
 			CurrentSelectionPosition.Y - InitialSelectionPoint.Y);
 
-		if (foundEntities.Num() > 0) {
-			for (int i = 0; i < foundEntities.Num(); ++i) {
-				foundEntities[i]->SetDeselected();
-			}
-		}
+		TArray<AEntityPawn*> previouslyFoundEntities = foundEntities;
+
+		//if (foundEntities.Num() > 0) {
+		//	for (auto & entity : foundEntities) {
+		//		entity->SetDeselected();
+		//	}
+		//}
 		foundEntities.Empty();
 		GetActorsInSelectionRectangle<AEntityPawn>(InitialSelectionPoint, CurrentSelectionPosition, foundEntities, false, false);
 
+		//set found entitites which weren't selected previously to selected and remove them from previously found entities
 		if (foundEntities.Num() > 0) {
-			for (int i = 0; i < foundEntities.Num(); ++i) {
-				foundEntities[i]->SetSelected();
+			for (auto& entity : foundEntities) {
+				if (previouslyFoundEntities.Find(entity) >= 0) {
+					previouslyFoundEntities.Remove(entity);
+				}
+				else {
+					entity->SetSelected();
+				}
+			}
+		}
+		//deselect entities which were previously found and are no longer selected
+		if (previouslyFoundEntities.Num() > 0) {
+			for (auto& entity : previouslyFoundEntities) {
+				entity->SetDeselected();
 			}
 		}
 	}

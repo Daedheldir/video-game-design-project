@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "../Components/Movement/ShipMovementComponent.h"
+#include <Components/WidgetComponent.h>
 
 #include "EntityPawn.generated.h"
 
@@ -42,8 +43,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Mesh, meta = (AllowPrivateAccess = "true"))
 		UStaticMeshComponent* shipStaticMesh;
 
-	UPROPERTY(EditAnywhere, Category = Mesh, meta = (AllowPrivateAccess = "true"))
-		UStaticMeshComponent* shipSelectionWidget;
+	UPROPERTY(EditAnywhere)
+		UWidgetComponent* shipSelectionWidget;
 
 	FVector moveTargetPosition;
 };
