@@ -9,7 +9,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "../UI/HUD/RTSHUD.h"
 #include "../Entities/EntityPawn.h"
-
+#include "../Managers/EntityManagerActor.h"
 /**
  *
  */
@@ -26,13 +26,34 @@ public:
 	virtual void SetupInputComponent() override;
 
 protected:
+	//Entity spawning
+	void SpawnEntity();
+
+	// Entity commanding
 	void SelectionPressed();
 	void SelectionReleased();
 	void MoveReleased();
+
+	//Camera movement
+	void CameraMoveForward(float axisVal);
+	void CameraMoveSide(float axisVal);
+	void CameraMoveHeight(float axisVal);
+	FVector GetCameraMovementNewLocation(const FVector& newLocationOffset) const;
 
 public:
 	ARTSHUD* HUDptr;
 
 private:
+	//entity spawning
+	AEntityManagerActor* entityManager;
+
+	//entity selection
 	TArray<AEntityPawn*> selectedEntities;
+
+	//camera movement
+	UPROPERTY(EditAnywhere)
+		FVector cameraMovementScale;
+	UPROPERTY(EditAnywhere)
+		FVector cameraMovementAccScale;
+	FVector currentCameraMovementVelocity;
 };

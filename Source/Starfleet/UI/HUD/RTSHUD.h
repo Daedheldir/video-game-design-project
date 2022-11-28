@@ -17,6 +17,8 @@ class STARFLEET_API ARTSHUD : public AHUD
 	GENERATED_BODY()
 
 public:
+	ARTSHUD();
+	virtual void BeginPlay() override;
 	virtual void DrawHUD() override;
 
 	FVector2D GetMousePosition2D();
@@ -28,4 +30,9 @@ public:
 	FVector2D CurrentSelectionPosition;
 
 	TArray<AEntityPawn*> foundEntities;
+
+	UPROPERTY(EditAnywhere, Category = "Command Points")
+		TSubclassOf<class UUserWidget> HUDWidgetClass;
+	UPROPERTY(EditAnywhere, Category = "Command Points")
+		class UUserWidget* commandPointsMenu;
 };

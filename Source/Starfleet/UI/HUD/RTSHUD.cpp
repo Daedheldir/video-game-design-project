@@ -2,6 +2,22 @@
 
 #include "RTSHUD.h"
 
+ARTSHUD::ARTSHUD() {
+	//static ConstructorHelpers::FClassFinder<UUserWidget> HealthBarObj(TEXT("/Game/FirstPerson/UI/Health_UI"));
+	//HUDWidgetClass = HealthBarObj.Class;
+}
+
+void ARTSHUD::BeginPlay() {
+	Super::BeginPlay();
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Creating command points menu"));
+	if (commandPointsMenu)
+	{
+		commandPointsMenu->AddToViewport();
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Command points menu added to viewport"));
+	}
+}
+
 void ARTSHUD::DrawHUD()
 {
 	if (bStartSelecting == true) {

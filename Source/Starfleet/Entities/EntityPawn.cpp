@@ -3,23 +3,24 @@
 #include "EntityPawn.h"
 #include <Blueprint/UserWidget.h>
 #include "../UI/Widgets/ShipSelectionUserWidget.h"
+#include "NiagaraFunctionLibrary.h"
 
 // Sets default values
-AEntityPawn::AEntityPawn()
+AEntityPawn::AEntityPawn() :
+	shipStaticMesh{ CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Ship Mesh")) },
+	shipMoveComponent{ CreateDefaultSubobject<UShipMovementComponent>(TEXT("Ship Movement Component")) },
+	shipSelectionWidget{ CreateDefaultSubobject<UWidgetComponent>(TEXT("Selection Widget Component")) }
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	shipStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Ship Mesh"));
 	shipStaticMesh->SetupAttachment(RootComponent);
 
-	shipMoveComponent = CreateDefaultSubobject<UShipMovementComponent>(TEXT("Ship Movement Component"));
 	GetMovementComponent()->SetPlaneConstraintNormal(FVector(0, 0, 1));
 	GetMovementComponent()->SetPlaneConstraintEnabled(true);
 	GetMovementComponent()->bSnapToPlaneAtStart = true;
 	GetMovementComponent()->SetUpdatedComponent(this->GetRootComponent());
 
-	shipSelectionWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Selection Widget Component"));
 	shipSelectionWidget->SetupAttachment(shipStaticMesh);
 }
 
@@ -47,8 +48,37 @@ UPawnMovementComponent* AEntityPawn::GetMovementComponent() const {
 void AEntityPawn::BeginPlay()
 {
 	Super::BeginPlay();
+	CommandMoveTo(this->GetActorLocation());
+	FTimerHandle handle;
+	GetWorld()->GetTimerManager().SetTimer(handle, this, &AEntityPawn::SetDeselected, .1f, false);
 
-	SetDeselected();
+	//engine particles
+	if (engineParticleEffectBP != nullptr) {
+		for (int i = 0; i < engineParticleEffectsPositions.Num(); ++i) {
+			FTransform& transform = engineParticleEffectsPositions[i];
+			UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
+				engineParticleEffectBP,
+				this->GetRootComponent(),
+				FName(TEXT("Engine_particle_" + i)),
+				FVector(transform.GetLocation()),
+				FRotator(transform.GetRotation()),
+				EAttachLocation::Type::KeepRelativeOffset,
+				true);
+
+			NiagaraComp->SetNiagaraVariableFloat(FString("engineSize"), 60);
+			NiagaraComp->SetNiagaraVariableFloat(FString("acceleration"), 10);
+			NiagaraComp->RegisterComponent();
+
+			engineParticleEffects.Add(NiagaraComp);
+
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				5.0f,
+				FColor::Red,
+				TEXT("Spawned engine system at " + NiagaraComp->GetComponentLocation().ToCompactString())
+			);
+		}
+	}
 }
 
 // Called every frame
@@ -64,10 +94,24 @@ void AEntityPawn::Tick(float DeltaTime)
 
 		if (GetMovementComponent() != nullptr) {
 			GetMovementComponent()->AddInputVector(directionVec, true);
+			for (auto niagaraComp : engineParticleEffects) {
+				//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Command \"Move to\" given with vector ") + directionVec.ToCompactString());
+
+				niagaraComp->SetNiagaraVariableFloat(FString("acceleration"), 10.0f);
+			}
+
 			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Command \"Move to\" given with vector ") + directionVec.ToCompactString());
 		}
 		else {
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("GetMovementComponent() returned nullptr!"));
+		}
+	}
+	else {
+		for (auto niagaraComp : engineParticleEffects) {
+			if (niagaraComp->IsActive()) {
+				//niagaraComp->SetActive(false);
+				niagaraComp->SetNiagaraVariableFloat(FString("acceleration"), 1.0f);
+			}
 		}
 	}
 }

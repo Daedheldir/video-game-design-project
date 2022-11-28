@@ -6,6 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "../Components/Movement/ShipMovementComponent.h"
 #include <Components/WidgetComponent.h>
+#include <NiagaraComponent.h>
 
 #include "EntityPawn.generated.h"
 
@@ -18,8 +19,10 @@ public:
 	// Sets default values for this pawn's properties
 	AEntityPawn();
 
-	void SetSelected();
-	void SetDeselected();
+	UFUNCTION()
+		void SetSelected();
+	UFUNCTION()
+		void SetDeselected();
 
 	void CommandMoveTo(const FVector& destination);
 
@@ -37,14 +40,22 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-	UPROPERTY(EditAnywhere, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 		UShipMovementComponent* shipMoveComponent;
 
-	UPROPERTY(EditAnywhere, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
 		UStaticMeshComponent* shipStaticMesh;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UWidgetComponent* shipSelectionWidget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
+		TArray<UNiagaraComponent*> shipEngineParticleEffects;
 	FVector moveTargetPosition;
+
+	UPROPERTY(EditAnywhere)
+		UNiagaraSystem* engineParticleEffectBP;
+	TArray<UNiagaraComponent*> engineParticleEffects;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (MakeEditWidget = true))
+		TArray<FTransform> engineParticleEffectsPositions;
 };
