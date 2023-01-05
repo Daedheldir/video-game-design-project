@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "MunitionsBase.h"
+#include "NiagaraFunctionLibrary.h"
+#include <NiagaraComponent.h>
 
 // Sets default values
 AMunitionsBase::AMunitionsBase()
@@ -21,7 +23,6 @@ AMunitionsBase::AMunitionsBase()
 		CollisionComponent->InitSphereRadius(15.0f);
 
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
-		CollisionComponent->OnComponentHit.AddDynamic(this, &AMunitionsBase::OnHit);
 
 		// Set the root component to be the collision component.
 		RootComponent = CollisionComponent;
@@ -38,15 +39,26 @@ AMunitionsBase::AMunitionsBase()
 		ProjectileMovementComponent->bShouldBounce = false;
 		ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
 	}
+
+	explosionSize = 1.0f;
 }
 
 void AMunitionsBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f,
+		FColor::White,
+		TEXT("AMunitionsBase::OnHit - Projectile hit a ") + OtherActor->GetName());
+
 	if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
 	{
 		OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
 	}
+	UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		GetWorld(),
+		explosionEffectBP,
+		this->GetActorLocation());
+	NiagaraComp->SetNiagaraVariableFloat(FString("ExplosionSize"), explosionSize);
 
 	Destroy();
 }
@@ -55,6 +67,9 @@ void AMunitionsBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor
 void AMunitionsBase::BeginPlay()
 {
 	Super::BeginPlay();
+	if (CollisionComponent) {
+		CollisionComponent->OnComponentHit.AddDynamic(this, &AMunitionsBase::OnHit);
+	}
 }
 
 // Called every frame

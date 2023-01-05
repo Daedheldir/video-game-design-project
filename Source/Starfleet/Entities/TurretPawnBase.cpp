@@ -148,18 +148,23 @@ void ATurretPawnBase::GetMuzzleSockets() {
 
 // Almost the same as spawning the turrets, but this time we check to make sure the projectile blueprint exists
 void ATurretPawnBase::SpawnMunitions(FName _MuzzleSocketName) {
-	if (MunitionsBP != NULL) {
+	if (MunitionsBP) {
 		// Get the location and the rotation for the new projectile
 		FVector SpawnLocation = TurretBarrelMesh->GetSocketLocation(_MuzzleSocketName);
 		FRotator SpawnRotation = TurretBarrelMesh->GetSocketRotation(_MuzzleSocketName);
 
 		// Making sure the world exists, if it does we spawn it!
 		UWorld* const World = GetWorld();
-		if (World && MunitionsBP) {
+		if (World) {
 			AMunitionsBase* Projectile = World->SpawnActor<AMunitionsBase>(MunitionsBP, SpawnLocation, SpawnRotation);
 
 			// We give the projectiles an owner! This can be used later for hit detection and the like!
 			Projectile->Owner = this->GetAttachParentActor();
+		}
+		else {
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f,
+				FColor::Red,
+				TEXT("ATurretPawnBase::SpawnMunitions - World for turrets is null!"));
 		}
 
 		// This is completely option. I made a muzzle flash for fun. You can remove the below If statement if you want.
@@ -173,7 +178,12 @@ void ATurretPawnBase::SpawnMunitions(FName _MuzzleSocketName) {
 				EAttachLocation::Type::SnapToTarget,
 				true);
 		}
-		DrawDebugSphere(GetWorld(), SpawnLocation, 25.0f, 16, FColor(255, 0, 0), false, 10.0f);
+		else {
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f,
+				FColor::Red,
+				TEXT("ATurretPawnBase::SpawnMunitions - MunitionsParticleEffectBP for turrets is not assigned!"));
+		}
+		//DrawDebugSphere(GetWorld(), SpawnLocation, 25.0f, 16, FColor(255, 0, 0), false, 10.0f);
 		DrawDebugDirectionalArrow(GetWorld(), SpawnLocation, SpawnLocation + 50 * SpawnRotation.Vector(), 25.0f, FColor::Red, false, 10.0f);
 	}
 }

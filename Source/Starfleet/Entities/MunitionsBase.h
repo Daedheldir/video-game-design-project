@@ -9,6 +9,8 @@
 
 #include "MunitionsBase.generated.h"
 
+class UNiagaraSystem;
+
 UCLASS(Abstract)
 class STARFLEET_API AMunitionsBase : public AActor
 {
@@ -30,8 +32,12 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 protected:
-	UPROPERTY(VisibleDefaultsOnly, Category = "Projectile")
+	UPROPERTY(VisibleDefaultsOnly, Category = "Collision")
 		USphereComponent* CollisionComponent;
 	UPROPERTY(VisibleAnywhere, Category = "Movement")
 		UProjectileMovementComponent* ProjectileMovementComponent;
+	UPROPERTY(EditDefaultsOnly, Category = "Particles")
+		UNiagaraSystem* explosionEffectBP;
+	UPROPERTY(EditDefaultsOnly, Category = "Particles")
+		float explosionSize;
 };

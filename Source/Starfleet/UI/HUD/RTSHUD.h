@@ -11,6 +11,8 @@
  */
 #include "RTSHUD.generated.h"
 
+class UCommandPointsHUDWidget;
+
 UCLASS()
 class STARFLEET_API ARTSHUD : public AHUD
 {
@@ -31,6 +33,8 @@ public:
 
 	TArray<AEntityPawn*> foundEntities;
 
-	UPROPERTY(EditAnywhere, Category = "Command Points")
-		class UUserWidget* commandPointsMenu;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Command Points")
+		TSubclassOf<UCommandPointsHUDWidget> commandPointsMenuBP;
+
+	UCommandPointsHUDWidget* commandPointsMenu;
 };

@@ -26,15 +26,16 @@ public:
 	void SetShipMovementState(EShipMovementState shipState, bool value);
 
 	virtual inline float GetMaxSpeed() const override;
+	inline float GetCurrentSpeed() const;
 	inline float GetForwardAcceleration() const;
 	inline float GetMaxAngularSpeed() const;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
 protected:
 	uint8 currentMovementState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float fMaxSpeed;
+	float fCurrentSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float fForwardAcceleration;

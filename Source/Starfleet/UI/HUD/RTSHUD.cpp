@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "RTSHUD.h"
+#include "../Widgets/CommandPointsHUDWidget.h"
 
 ARTSHUD::ARTSHUD() {
 	//static ConstructorHelpers::FClassFinder<UUserWidget> HealthBarObj(TEXT("/Game/FirstPerson/UI/Health_UI"));
@@ -11,13 +12,16 @@ void ARTSHUD::BeginPlay() {
 	Super::BeginPlay();
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Creating command points menu"));
-	if (commandPointsMenu != nullptr)
-	{
-		commandPointsMenu->AddToViewport();
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Command points menu added to viewport"));
-	}
-	else {
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Command points menu bp not assigned!"));
+	if (commandPointsMenuBP) {
+		commandPointsMenu = CreateWidget<UCommandPointsHUDWidget>(GetWorld()->GetFirstPlayerController(), commandPointsMenuBP, "CommandPointsMenu");
+		if (commandPointsMenu != nullptr)
+		{
+			commandPointsMenu->AddToViewport();
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Command points menu added to viewport"));
+		}
+		else {
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Command points menu bp not assigned!"));
+		}
 	}
 }
 

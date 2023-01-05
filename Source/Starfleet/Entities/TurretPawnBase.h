@@ -63,7 +63,7 @@ public:
 		float TurretMaxPitch;
 	UPROPERTY(Category = "Turret | Barrel", BlueprintReadWrite, EditDefaultsOnly)
 		float TurretMinPitch;
-	UPROPERTY(Category = "Turret | Control", BlueprintReadWrite, EditDefaultsOnly)
+	UPROPERTY(Category = "Turret | Control", BlueprintReadOnly, EditDefaultsOnly)
 		bool IsOccupied;
 	UPROPERTY(Category = "Turret | Control", BlueprintReadOnly, VisibleAnywhere)
 		bool IsTargeting;
