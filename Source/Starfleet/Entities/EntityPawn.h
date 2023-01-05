@@ -5,11 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "../Components/Movement/ShipMovementComponent.h"
-#include "TurretPawnBase.h"
 #include <Components/WidgetComponent.h>
 #include <NiagaraComponent.h>
 
 #include "EntityPawn.generated.h"
+
+class ATurretPawnBase;
 
 UCLASS(Abstract)
 class STARFLEET_API AEntityPawn : public APawn
@@ -21,9 +22,12 @@ public:
 	AEntityPawn();
 
 	UFUNCTION()
-		void SetSelected();
+		void SetSelected(const bool selected);
 	UFUNCTION()
-		void SetDeselected();
+		bool IsCurrentlySelected() const;
+
+	UFUNCTION()
+		bool IsOwnedByPlayer() const;
 
 	void CommandMoveTo(const FVector& destination);
 	void CommandTurretsTarget(AActor* targetActor);
@@ -47,6 +51,9 @@ private:
 	void DestroyTurrets();
 
 protected:
+	bool isSelected;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ship")
+		bool ownedByPlayer;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 		UShipMovementComponent* shipMoveComponent;
 

@@ -111,8 +111,10 @@ void AShipRTSController::MoveReleased()
 
 	if (hit.GetActor()->GetClass()->IsChildOf(AEntityPawn::StaticClass())) {
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, TEXT("Right Released at entity ") + hit.GetActor()->GetClass()->GetName());
-		for (int i = 0; i < selectedEntities.Num(); ++i) {
-			selectedEntities[i]->CommandTurretsTarget(hit.GetActor());
+		if (!Cast<AEntityPawn>(hit.GetActor())->IsOwnedByPlayer()) { //if its enemy then make turrets target it
+			for (int i = 0; i < selectedEntities.Num(); ++i) {
+				selectedEntities[i]->CommandTurretsTarget(hit.GetActor());
+			}
 		}
 	}
 	else {

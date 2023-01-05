@@ -41,22 +41,26 @@ void ARTSHUD::DrawHUD()
 		foundEntities.Empty();
 		GetActorsInSelectionRectangle<AEntityPawn>(InitialSelectionPoint, CurrentSelectionPosition, foundEntities, false, false);
 
+		for (int i = 0; i < foundEntities.Num(); ++i) { //remove all enemy entities
+			if (foundEntities[i]->IsOwnedByPlayer())
+				continue;
+			foundEntities[i]->SetSelected(false);
+			foundEntities.RemoveAtSwap(i);
+		}
+
 		//set found entitites which weren't selected previously to selected and remove them from previously found entities
-		if (foundEntities.Num() > 0) {
-			for (auto& entity : foundEntities) {
-				if (previouslyFoundEntities.Find(entity) >= 0) {
-					previouslyFoundEntities.Remove(entity);
-				}
-				else {
-					entity->SetSelected();
-				}
+		for (auto& entity : foundEntities) {
+			if (previouslyFoundEntities.Find(entity) >= 0) {
+				previouslyFoundEntities.Remove(entity);
+			}
+			else {
+				entity->SetSelected(true);
 			}
 		}
+
 		//deselect entities which were previously found and are no longer selected
-		if (previouslyFoundEntities.Num() > 0) {
-			for (auto& entity : previouslyFoundEntities) {
-				entity->SetDeselected();
-			}
+		for (auto& entity : previouslyFoundEntities) {
+			entity->SetSelected(false);
 		}
 	}
 }

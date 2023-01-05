@@ -4,6 +4,7 @@
 #include <Blueprint/UserWidget.h>
 #include "../UI/Widgets/ShipSelectionUserWidget.h"
 #include "NiagaraFunctionLibrary.h"
+#include "TurretPawnBase.h"
 
 // Sets default values
 AEntityPawn::AEntityPawn() :
@@ -22,18 +23,37 @@ AEntityPawn::AEntityPawn() :
 	GetMovementComponent()->SetUpdatedComponent(this->GetRootComponent());
 
 	shipSelectionWidget->SetupAttachment(shipStaticMesh);
+
+	isSelected = false;
 }
 
-void AEntityPawn::SetSelected()
+void AEntityPawn::SetSelected(const bool selected)
 {
 	UShipSelectionUserWidget* selectionWidget = Cast<UShipSelectionUserWidget>(shipSelectionWidget->GetWidget());
-	selectionWidget->PlaySelectedAnimation();
+	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.f, FColor::White,
+		FString::Printf(TEXT("Ship is now %s, request to %s"),
+			isSelected ? TEXT("selected") : TEXT("unselected"),
+			selected ? TEXT("select") : TEXT("unselect"))
+	);
+
+	if (selected && !IsCurrentlySelected()) {	//if entity isn't currently selected then play select animation
+		selectionWidget->PlaySelectedAnimation();
+	}
+	else if (!selected && IsCurrentlySelected()) { //if entity is currently selected then play deselect animation
+		selectionWidget->PlayUnselectedAnimation();
+	}
+
+	isSelected = selected;
 }
 
-void AEntityPawn::SetDeselected()
+bool AEntityPawn::IsCurrentlySelected() const
 {
-	UShipSelectionUserWidget* selectionWidget = Cast<UShipSelectionUserWidget>(shipSelectionWidget->GetWidget());
-	selectionWidget->PlayUnselectedAnimation();
+	return isSelected;
+}
+
+bool AEntityPawn::IsOwnedByPlayer() const
+{
+	return ownedByPlayer;
 }
 
 void AEntityPawn::CommandMoveTo(const FVector& destination) {
@@ -57,7 +77,8 @@ void AEntityPawn::BeginPlay()
 	Super::BeginPlay();
 	CommandMoveTo(this->GetActorLocation());
 	FTimerHandle handle;
-	GetWorld()->GetTimerManager().SetTimer(handle, this, &AEntityPawn::SetDeselected, .1f, false);
+	FTimerDelegate SetDeselectedDelegate = FTimerDelegate::CreateUObject(this, &AEntityPawn::SetSelected, false);
+	GetWorld()->GetTimerManager().SetTimer(handle, SetDeselectedDelegate, .1f, false);
 
 	//engine particles
 	if (engineParticleEffectBP != nullptr) {
@@ -128,7 +149,6 @@ void AEntityPawn::Tick(float DeltaTime)
 // Called to bind functionality to input
 void AEntityPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
 void AEntityPawn::FillTurretSockets() {

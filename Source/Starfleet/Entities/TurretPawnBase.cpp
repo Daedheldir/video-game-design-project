@@ -67,11 +67,11 @@ void ATurretPawnBase::SetCurrentTurretTarget(AActor* newTarget)
 }
 
 void ATurretPawnBase::TurretLookAt() {
-	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 0.1f, FColor::White,
-		FString::Printf(TEXT("Turret current yaw is %f, Max and Min Yaw = %f , %f"),
-			CurrentTurretRot.Yaw,
-			CurrentYawMax,
-			CurrentYawMin));
+	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 0.1f, FColor::White,
+	//	FString::Printf(TEXT("Turret current yaw is %f, Max and Min Yaw = %f , %f"),
+	//		CurrentTurretRot.Yaw,
+	//		CurrentYawMax,
+	//		CurrentYawMin));
 
 	if (CurrentTurretTarget == nullptr) {
 		return;
@@ -98,11 +98,11 @@ void ATurretPawnBase::TurretLookAt() {
 
 	// We check to see if the turret is within it's movement range,
 	//if it is, we add the rotation and do one last addition check.
-	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 0.1f, FColor::White,
-		FString::Printf(TEXT("Turret commanded yaw is %s , target is %s"),
-			*TurretYaw.ToCompactString(),
-			*TurretTargetLookDirection.ToCompactString())
-	);
+	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 0.1f, FColor::White,
+	//	FString::Printf(TEXT("Turret commanded yaw is %s , target is %s"),
+	//		*TurretYaw.ToCompactString(),
+	//		*TurretTargetLookDirection.ToCompactString())
+	//);
 
 	if (!FMath::IsWithin(CurrentTurretRot.Yaw, CurrentYawMin, CurrentYawMax)) {
 		// turret can't aim at target
