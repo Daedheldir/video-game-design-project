@@ -35,7 +35,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float fMaxSpeed;
-	float fCurrentSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float fForwardAcceleration;

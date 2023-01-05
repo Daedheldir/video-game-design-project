@@ -110,7 +110,7 @@ void ATurretPawnBase::TurretLookAt() {
 		CurrentTurretRot.Yaw = FMath::Clamp(CurrentTurretRot.Yaw, CurrentYawMin + 0.01, CurrentYawMax - 0.01);
 		return;
 	}
-	TurretHullMesh->AddRelativeRotation(TurretYaw);
+	RootComponent->AddRelativeRotation(TurretYaw);
 
 	// Now it's time to do the same for the turret's barrels pitch!
 	FRotator TurretBarrelPitch = FRotator(TurretTargetLookDirection.Pitch, 0, 0);

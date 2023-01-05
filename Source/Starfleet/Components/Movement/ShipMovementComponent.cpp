@@ -23,11 +23,6 @@ inline float UShipMovementComponent::GetMaxSpeed() const {
 	return fMaxSpeed;
 }
 
-inline float UShipMovementComponent::GetCurrentSpeed() const
-{
-	float fCurrentSpeed;
-}
-
 inline float UShipMovementComponent::GetForwardAcceleration() const {
 	return fForwardAcceleration;
 }
