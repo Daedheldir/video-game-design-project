@@ -32,7 +32,5 @@ public:
 	TArray<AEntityPawn*> foundEntities;
 
 	UPROPERTY(EditAnywhere, Category = "Command Points")
-		TSubclassOf<class UUserWidget> HUDWidgetClass;
-	UPROPERTY(EditAnywhere, Category = "Command Points")
 		class UUserWidget* commandPointsMenu;
 };

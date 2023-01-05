@@ -46,7 +46,7 @@ void UShipMovementComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 		angleDifference -= 2 * PI;
 	}
 
-	if (!desiredMovementThisFrame.IsNearlyZero()) {
+	if (!desiredMovementThisFrame.IsNearlyZero(0.1)) {
 		double desiredAngleThisFrame = UpdatedComponent->GetForwardVector().HeadingAngle();
 
 		if (std::abs(angleDifference) >= GetMaxAngularSpeed() * DeltaTime)

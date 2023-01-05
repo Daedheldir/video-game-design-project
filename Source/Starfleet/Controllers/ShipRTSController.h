@@ -7,13 +7,17 @@
 #include <DrawDebugHelpers.h>
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "NiagaraFunctionLibrary.h"
-#include "../UI/HUD/RTSHUD.h"
-#include "../Entities/EntityPawn.h"
 #include "../Managers/EntityManagerActor.h"
+#include "../Entities/EEntityTypes.h"
 /**
  *
  */
 #include "ShipRTSController.generated.h"
+
+ //FORWARD DECLARATIONS
+class ARTSHUD;
+class AInputStateInfo;
+class AEntityPawn;
 
 UCLASS()
 class STARFLEET_API AShipRTSController : public APlayerController
@@ -28,6 +32,7 @@ public:
 protected:
 	//Entity spawning
 	void SpawnEntity();
+	void SpawnEntity(EntityTypes enitityType);
 
 	// Entity commanding
 	void SelectionPressed();
@@ -42,9 +47,11 @@ protected:
 
 public:
 	ARTSHUD* HUDptr;
-
+	AInputStateInfo* InputState;
 private:
 	//entity spawning
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<AEntityManagerActor> entityManager_BP_Class;
 	AEntityManagerActor* entityManager;
 
 	//entity selection

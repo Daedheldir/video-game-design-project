@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EntityManagerActor.h"
+#include "../Entities/EntityPawn.h"
 
 // Sets default values
 AEntityManagerActor::AEntityManagerActor()
@@ -23,7 +24,6 @@ bool AEntityManagerActor::SpawnEntityAtLocation(const EntityTypes& entityType, c
 	case EntityTypes::IMPERIAL:
 		if (!entityBlueprints.Contains(EntityTypes::IMPERIAL)) {
 			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Spawn Entity: Imperial not found in blueprints"));
-
 			return false;
 		}
 

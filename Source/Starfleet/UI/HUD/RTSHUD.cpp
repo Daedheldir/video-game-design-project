@@ -11,10 +11,13 @@ void ARTSHUD::BeginPlay() {
 	Super::BeginPlay();
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Creating command points menu"));
-	if (commandPointsMenu)
+	if (commandPointsMenu != nullptr)
 	{
 		commandPointsMenu->AddToViewport();
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Command points menu added to viewport"));
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Command points menu bp not assigned!"));
 	}
 }
 

@@ -5,12 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "../Components/Movement/ShipMovementComponent.h"
+#include "TurretPawnBase.h"
 #include <Components/WidgetComponent.h>
 #include <NiagaraComponent.h>
 
 #include "EntityPawn.generated.h"
 
-UCLASS()
+UCLASS(Abstract)
 class STARFLEET_API AEntityPawn : public APawn
 {
 	GENERATED_BODY()
@@ -25,6 +26,7 @@ public:
 		void SetDeselected();
 
 	void CommandMoveTo(const FVector& destination);
+	void CommandTurretsTarget(AActor* targetActor);
 
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
@@ -39,23 +41,36 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+private:
+	void FillTurretSockets();
+	void SpawnTurret(const FName& _TurretSocketName);
+	void DestroyTurrets();
+
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 		UShipMovementComponent* shipMoveComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
 		UStaticMeshComponent* shipStaticMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 		UWidgetComponent* shipSelectionWidget;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Niagara")
 		TArray<UNiagaraComponent*> shipEngineParticleEffects;
 	FVector moveTargetPosition;
 
-	UPROPERTY(EditAnywhere)
+	//engine particles
+	UPROPERTY(EditDefaultsOnly)
 		UNiagaraSystem* engineParticleEffectBP;
 	TArray<UNiagaraComponent*> engineParticleEffects;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (MakeEditWidget = true))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Meta = (MakeEditWidget = true))
 		TArray<FTransform> engineParticleEffectsPositions;
+
+	//Turrets functionality
+	UPROPERTY(Category = BlueprintSpawn, EditDefaultsOnly, BlueprintReadOnly)
+		TSubclassOf<ATurretPawnBase> TurretBP;
+	TArray<FName> TurretArray;
+	UPROPERTY(Category = BlueprintSpawn, EditDefaultsOnly, BlueprintReadWrite)
+		TArray<ATurretPawnBase*> SpawnedTurretArray;
 };

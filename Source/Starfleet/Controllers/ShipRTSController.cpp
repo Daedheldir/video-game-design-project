@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ShipRTSController.h"
-#include <Kismet/GameplayStatics.h>
+#include "../UI/HUD/RTSHUD.h"
+#include "../InputStateInfo.h"
+#include "../Entities/EntityPawn.h"
 
 AShipRTSController::AShipRTSController() :
 	cameraMovementScale{ 2000, 2000, 5000 },
@@ -16,12 +18,8 @@ void AShipRTSController::BeginPlay()
 	HUDptr = Cast<ARTSHUD>(GetHUD());
 	TArray<AActor*> foundActors;
 
-	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), AEntityManagerActor::StaticClass(), FName("EntityManagerActor"), foundActors);
-
-	if (foundActors.Num() > 0) {
-		if (foundActors[0] != nullptr)
-			entityManager = Cast<AEntityManagerActor>(foundActors[0]);
-	}
+	InputState = GetWorld()->SpawnActor<AInputStateInfo>(AInputStateInfo::StaticClass());
+	entityManager = GetWorld()->SpawnActor<AEntityManagerActor>(entityManager_BP_Class);
 }
 
 void AShipRTSController::SetupInputComponent()
@@ -41,7 +39,11 @@ void AShipRTSController::SetupInputComponent()
 	InputComponent->BindAxis(TEXT("CameraMovementX"), this, &AShipRTSController::CameraMoveSide);
 	InputComponent->BindAxis(TEXT("CameraMovementZ"), this, &AShipRTSController::CameraMoveHeight);
 }
-void AShipRTSController::SpawnEntity() {
+void AShipRTSController::SpawnEntity()
+{
+	SpawnEntity(EntityTypes::IMPERIAL);
+}
+void AShipRTSController::SpawnEntity(EntityTypes enitityType) {
 	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("Spawn Entity"));
 	if (this->entityManager == nullptr) {
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("EntityManager not found!"));
@@ -49,37 +51,85 @@ void AShipRTSController::SpawnEntity() {
 	}
 	FHitResult hit;
 	GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, hit);
-	this->entityManager->SpawnEntityAtLocation(EntityTypes::IMPERIAL, hit.Location);
+	this->entityManager->SpawnEntityAtLocation(enitityType, hit.Location);
 }
 void AShipRTSController::SelectionPressed()
 {
-	HUDptr->bStartSelecting = true;
-	HUDptr->InitialSelectionPoint = HUDptr->GetMousePosition2D();
+	switch (InputState->GetCurrentInputState())
+	{
+	case AInputStateInfo::InputState::NONE:
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionPressed, InputState::NONE"));
+
+		HUDptr->bStartSelecting = true;
+		HUDptr->InitialSelectionPoint = HUDptr->GetMousePosition2D();
+		InputState->SetCurrentInputState(AInputStateInfo::InputState::SELECTING);
+		break;
+	case AInputStateInfo::InputState::SELECTING:
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionPressed, InputState::SELECTING"));
+
+		break;
+	case AInputStateInfo::InputState::PLACING_SHIP:
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionPressed, InputState::PLACING_SHIP"));
+
+		break;
+	default:
+		break;
+	}
 }
 
 void AShipRTSController::SelectionReleased()
 {
-	HUDptr->bStartSelecting = false;
-	selectedEntities = HUDptr->foundEntities;
+	switch (InputState->GetCurrentInputState())
+	{
+	case AInputStateInfo::InputState::NONE:
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionReleased, InputState::NONE"));
+
+		break;
+	case AInputStateInfo::InputState::SELECTING:
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionReleased, InputState::SELECTING"));
+
+		HUDptr->bStartSelecting = false;
+		selectedEntities = HUDptr->foundEntities;
+		InputState->SetCurrentInputState(AInputStateInfo::InputState::NONE);
+		break;
+	case AInputStateInfo::InputState::PLACING_SHIP:
+		//spawn ship and go back to none
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionReleased, InputState::PLACING_SHIP"));
+
+		SpawnEntity();
+		InputState->SetCurrentInputState(AInputStateInfo::InputState::NONE);
+		break;
+	default:
+		break;
+	}
 }
 
 void AShipRTSController::MoveReleased()
 {
 	FHitResult hit;
 	GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, hit);
-	for (int i = 0; i < selectedEntities.Num(); ++i) {
-		AEntityPawn* entity = selectedEntities[i];
-		FVector actorOrgin, actorBoundsExtent;
 
-		entity->GetActorBounds(true, actorOrgin, actorBoundsExtent);
-		float locationSpacing = FMath::Max(actorBoundsExtent.X, actorBoundsExtent.Y);
-
-		FVector moveLocation = hit.Location + FVector(i / 2 * locationSpacing * 3, i % 2 * locationSpacing * 3, 0);
-		entity->CommandMoveTo(moveLocation);
-
-		DrawDebugSphere(GetWorld(), moveLocation, 50.0f, 16, FColor(255, 255, 255), false, 10.0f);
+	if (hit.GetActor()->GetClass()->IsChildOf(AEntityPawn::StaticClass())) {
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, TEXT("Right Released at entity ") + hit.GetActor()->GetClass()->GetName());
+		for (int i = 0; i < selectedEntities.Num(); ++i) {
+			selectedEntities[i]->CommandTurretsTarget(hit.GetActor());
+		}
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, TEXT("Move Released at ") + hit.Location.ToCompactString());
+	else {
+		for (int i = 0; i < selectedEntities.Num(); ++i) {
+			AEntityPawn* entity = selectedEntities[i];
+			FVector actorOrgin, actorBoundsExtent;
+
+			entity->GetActorBounds(true, actorOrgin, actorBoundsExtent);
+			float locationSpacing = FMath::Max(actorBoundsExtent.X, actorBoundsExtent.Y);
+
+			FVector moveLocation = hit.Location + FVector(i / 2 * locationSpacing * 3, i % 2 * locationSpacing * 3, 0);
+			entity->CommandMoveTo(moveLocation);
+
+			DrawDebugSphere(GetWorld(), moveLocation, 50.0f, 16, FColor(255, 255, 255), false, 10.0f);
+		}
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, TEXT("Move Released at ") + hit.Location.ToCompactString());
+	}
 }
 
 void AShipRTSController::CameraMoveForward(float axisVal)

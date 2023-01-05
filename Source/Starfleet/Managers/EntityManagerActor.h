@@ -4,14 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "../Entities/EntityPawn.h"
-
+#include "../Entities/EEntityTypes.h"
 #include "EntityManagerActor.generated.h"
 
-UENUM(BlueprintType)
-enum class EntityTypes : uint8 {
-	IMPERIAL = 0 UMETA(DisplayName = "Imperial")
-};
+class AEntityPawn;
 
 UCLASS()
 class STARFLEET_API AEntityManagerActor : public AActor
