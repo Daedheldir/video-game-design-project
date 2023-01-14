@@ -8,7 +8,7 @@ void UCommandPointsHUDWidget::NativeConstruct() {
 	if (!spawnShip1Button->OnClicked.IsBound())
 		spawnShip1Button->OnClicked.AddDynamic(this, &UCommandPointsHUDWidget::OnClicked);
 
-	spawnShip1Text->SetText(FText::FromString(L"Spawn S1"));
+	spawnShip1Text->SetText(FText::FromString(L"Spawn Ship 1"));
 
 	InitializeInputStatePtr();
 }

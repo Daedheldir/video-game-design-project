@@ -29,6 +29,14 @@ public:
 	UFUNCTION()
 		bool IsOwnedByPlayer() const;
 
+	UFUNCTION()
+		bool IsAlive() const;
+
+	UFUNCTION()
+		void CauseDamage(float damageVal);
+	UFUNCTION()
+		void SetHealth(float health);
+
 	void CommandMoveTo(const FVector& destination);
 	void CommandTurretsTarget(AActor* targetActor);
 
@@ -68,11 +76,19 @@ protected:
 	FVector moveTargetPosition;
 
 	//engine particles
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Particles")
 		UNiagaraSystem* engineParticleEffectBP;
+	UPROPERTY(EditDefaultsOnly, Category = "Particles")
+		float engineSize;
 	TArray<UNiagaraComponent*> engineParticleEffects;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Meta = (MakeEditWidget = true))
 		TArray<FTransform> engineParticleEffectsPositions;
+
+	//destruction particles
+	UPROPERTY(EditDefaultsOnly, Category = "Particles")
+		UNiagaraSystem* explosionEffectBP;
+	UPROPERTY(EditDefaultsOnly, Category = "Particles")
+		float explosionSize;
 
 	//Turrets functionality
 	UPROPERTY(Category = BlueprintSpawn, EditDefaultsOnly, BlueprintReadOnly)
@@ -80,4 +96,7 @@ protected:
 	TArray<FName> TurretArray;
 	UPROPERTY(Category = BlueprintSpawn, EditDefaultsOnly, BlueprintReadWrite)
 		TArray<ATurretPawnBase*> SpawnedTurretArray;
+
+	UPROPERTY(Category = "Stats", EditDefaultsOnly, BlueprintReadWrite)
+		float fHealth;
 };

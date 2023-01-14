@@ -52,6 +52,11 @@ void ATurretPawnBase::BeginPlay()
 
 // Called every frame
 void ATurretPawnBase::Tick(float DeltaTime) {
+	if (CurrentTurretTarget != nullptr) {
+		if (CurrentTurretTarget->IsActorBeingDestroyed()) {
+			SetCurrentTurretTarget(nullptr);
+		}
+	}
 	TurretLookAt();
 	if (currentTime < refireDelay)
 		currentTime += DeltaTime;

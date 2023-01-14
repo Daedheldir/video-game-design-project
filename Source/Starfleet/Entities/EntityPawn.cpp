@@ -25,6 +25,8 @@ AEntityPawn::AEntityPawn() :
 	shipSelectionWidget->SetupAttachment(shipStaticMesh);
 
 	isSelected = false;
+
+	fHealth = 100.0f;
 }
 
 void AEntityPawn::SetSelected(const bool selected)
@@ -54,6 +56,24 @@ bool AEntityPawn::IsCurrentlySelected() const
 bool AEntityPawn::IsOwnedByPlayer() const
 {
 	return ownedByPlayer;
+}
+
+bool AEntityPawn::IsAlive() const
+{
+	if (fHealth > 0.0f)
+		return true;
+
+	return false;
+}
+
+void AEntityPawn::CauseDamage(float damageVal)
+{
+	fHealth -= damageVal;
+}
+
+void AEntityPawn::SetHealth(float health)
+{
+	fHealth = health;
 }
 
 void AEntityPawn::CommandMoveTo(const FVector& destination) {
@@ -116,6 +136,17 @@ void AEntityPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (!IsAlive()) {
+		this->Destroy();
+		if (explosionEffectBP != nullptr) {
+			UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+				GetWorld(),
+				explosionEffectBP,
+				this->GetActorLocation());
+			NiagaraComp->SetNiagaraVariableFloat(FString("ExplosionSize"), explosionSize);
+		}
+	}
+
 	FVector currentLocation = GetActorLocation();
 
 	if (FVector::Dist2D(currentLocation, moveTargetPosition) > 10.0f) {
@@ -154,10 +185,7 @@ void AEntityPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 void AEntityPawn::FillTurretSockets() {
 	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.0f, FColor::White,TEXT("AEntityPawn::FillTurretSockets"));
 
-	// We store all the socket names into our own Turret Array
 	TurretArray = shipStaticMesh->GetAllSocketNames();
-	// Then we iterate through that array and call our SpawnTurret() function and
-	// pass it our array's index
 	for (int i = 0; i < TurretArray.Num(); i++) {
 		SpawnTurret(TurretArray[i]);
 	}
@@ -166,7 +194,6 @@ void AEntityPawn::FillTurretSockets() {
 void AEntityPawn::SpawnTurret(const FName& _TurretSocketName) {
 	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 25.0f, FColor::White,TEXT("Spawning turret at socket " + _TurretSocketName.ToString()));
 
-	// First we want to make sure these values are all zeroed out
 	FTransform SocketTransform;
 
 	// Make sure the world exists first
@@ -181,27 +208,21 @@ void AEntityPawn::SpawnTurret(const FName& _TurretSocketName) {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
-	// This is where we instantiate our new Turret! RailGun_T can be whatever you want to name it
 	ATurretPawnBase* RailGun_T = GetWorld()->SpawnActor<ATurretPawnBase>(
 		TurretBP,
 		SocketTransform,
 		SpawnParams);
 
-	// Assign our newly spawned turret its rotation
 	RailGun_T->TurretLocalRot = SocketTransform.GetRotation().Rotator();
 
 	//TODO DIFFERENTIATE BETWEEN MIRRORED AND NOT MIRRORED TURRETS FOR CORRECT ANGLE HANDLING
 	bool mirroredSocket = _TurretSocketName.GetPlainNameString().Contains(TEXT("_R")) ? true : false;
-	//IF socket is mirrored then flip the yaw constraints
 	if (mirroredSocket) {
 		float tempMaxYaw = RailGun_T->TurretMaxYaw;
 		RailGun_T->TurretMaxYaw = RailGun_T->TurretMinYaw;
 		RailGun_T->TurretMinYaw = tempMaxYaw;
 	}
-	// Now we add that newly spawned turret to our array of pointers so we can reference it later
 	SpawnedTurretArray.Add(RailGun_T);
-
-	// Now we make sure our turret isn't null, and then attach it to our socket's location.
 
 	if (RailGun_T != NULL) {
 		RailGun_T->AttachToComponent(
@@ -211,7 +232,6 @@ void AEntityPawn::SpawnTurret(const FName& _TurretSocketName) {
 	}
 }
 void AEntityPawn::DestroyTurrets() {
-	// Iterate over the turrets in the array we have them stored
 	for (int i = 0; i < SpawnedTurretArray.Num(); i++) {
 		SpawnedTurretArray[i]->DetachFromControllerPendingDestroy();
 		SpawnedTurretArray[i]->Destroy();

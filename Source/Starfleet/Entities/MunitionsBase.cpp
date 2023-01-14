@@ -3,6 +3,7 @@
 #include "MunitionsBase.h"
 #include "NiagaraFunctionLibrary.h"
 #include <NiagaraComponent.h>
+#include "../Entities/EntityPawn.h"
 
 // Sets default values
 AMunitionsBase::AMunitionsBase()
@@ -53,6 +54,10 @@ void AMunitionsBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor
 	if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
 	{
 		OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
+	}
+	if (OtherActor->IsA(AEntityPawn::StaticClass())) {
+		AEntityPawn* entity = Cast<AEntityPawn>(OtherActor);
+		entity->CauseDamage(20.0f);
 	}
 	UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 		GetWorld(),
