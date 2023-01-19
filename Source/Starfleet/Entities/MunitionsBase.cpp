@@ -58,6 +58,9 @@ void AMunitionsBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor
 	if (OtherActor->IsA(AEntityPawn::StaticClass())) {
 		AEntityPawn* entity = Cast<AEntityPawn>(OtherActor);
 		entity->CauseDamage(20.0f);
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f,
+			FColor::White,
+			TEXT("AMunitionsBase::OnHit - OtherActor has " + FString::Printf(L"%.1f", entity->GetHealth())));
 	}
 	UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 		GetWorld(),

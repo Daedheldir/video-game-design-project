@@ -11,6 +11,7 @@
 #include "EntityPawn.generated.h"
 
 class ATurretPawnBase;
+class USpringArmComponent;
 
 UCLASS(Abstract)
 class STARFLEET_API AEntityPawn : public APawn
@@ -33,9 +34,13 @@ public:
 		bool IsAlive() const;
 
 	UFUNCTION()
-		void CauseDamage(float damageVal);
+		void CauseDamage(const float damageVal);
+
 	UFUNCTION()
-		void SetHealth(float health);
+		void SetHealth(const float health);
+
+	UFUNCTION()
+		float GetHealth() const;
 
 	void CommandMoveTo(const FVector& destination);
 	void CommandTurretsTarget(AActor* targetActor);
@@ -67,6 +72,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
 		UStaticMeshComponent* shipStaticMesh;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+		USpringArmComponent* SelectionSpringArm;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 		UWidgetComponent* shipSelectionWidget;

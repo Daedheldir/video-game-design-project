@@ -5,12 +5,15 @@
 #include "../UI/Widgets/ShipSelectionUserWidget.h"
 #include "NiagaraFunctionLibrary.h"
 #include "TurretPawnBase.h"
+#include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
 AEntityPawn::AEntityPawn() :
 	shipStaticMesh{ CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Ship Mesh")) },
 	shipMoveComponent{ CreateDefaultSubobject<UShipMovementComponent>(TEXT("Ship Movement Component")) },
-	shipSelectionWidget{ CreateDefaultSubobject<UWidgetComponent>(TEXT("Selection Widget Component")) }
+	SelectionSpringArm{ CreateDefaultSubobject<USpringArmComponent>(TEXT("Selection Spring Arm")) },
+	shipSelectionWidget{ CreateDefaultSubobject<UWidgetComponent>(TEXT("Selection Widget Component"))
+}
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -22,7 +25,8 @@ AEntityPawn::AEntityPawn() :
 	GetMovementComponent()->bSnapToPlaneAtStart = true;
 	GetMovementComponent()->SetUpdatedComponent(this->GetRootComponent());
 
-	shipSelectionWidget->SetupAttachment(shipStaticMesh);
+	SelectionSpringArm->SetupAttachment(shipStaticMesh);
+	shipSelectionWidget->SetupAttachment(SelectionSpringArm);
 
 	isSelected = false;
 
@@ -66,14 +70,18 @@ bool AEntityPawn::IsAlive() const
 	return false;
 }
 
-void AEntityPawn::CauseDamage(float damageVal)
+void AEntityPawn::CauseDamage(const float damageVal)
 {
 	fHealth -= damageVal;
 }
 
-void AEntityPawn::SetHealth(float health)
+void AEntityPawn::SetHealth(const float health)
 {
 	fHealth = health;
+}
+
+float AEntityPawn::GetHealth() const {
+	return fHealth;
 }
 
 void AEntityPawn::CommandMoveTo(const FVector& destination) {

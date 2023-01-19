@@ -55,6 +55,7 @@ void ATurretPawnBase::Tick(float DeltaTime) {
 	if (CurrentTurretTarget != nullptr) {
 		if (CurrentTurretTarget->IsActorBeingDestroyed()) {
 			SetCurrentTurretTarget(nullptr);
+			IsTargeting = false;
 		}
 	}
 	TurretLookAt();

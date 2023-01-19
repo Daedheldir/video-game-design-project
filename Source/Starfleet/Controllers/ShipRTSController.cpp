@@ -20,6 +20,7 @@ void AShipRTSController::BeginPlay()
 
 	InputState = GetWorld()->SpawnActor<AInputStateInfo>(AInputStateInfo::StaticClass());
 	entityManager = GetWorld()->SpawnActor<AEntityManagerActor>(entityManager_BP_Class);
+	entityManager->Tags.Add("PlayerEntityManager");
 }
 
 void AShipRTSController::SetupInputComponent()

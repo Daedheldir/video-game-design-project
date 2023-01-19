@@ -20,6 +20,8 @@ public:
 
 	bool SpawnEntityAtLocation(const EntityTypes& entityType, const FVector& location);
 
+	float GetCurrentResourcesValue() const;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -29,8 +31,16 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 protected:
-	UPROPERTY(EditDefaultsOnly)
+	//----------------ENTITIES-------------------
+	UPROPERTY(Category = "Entities", EditDefaultsOnly)
 		TMap<EntityTypes, TSubclassOf<AEntityPawn>> entityBlueprints;
+	UPROPERTY(Category = "Entities", EditDefaultsOnly)
+		TMap<EntityTypes, float> entitySpawnCosts;
 
 	TArray<AEntityPawn*> spawnedEntities;
+
+	//----------------RESOURCES-------------------
+	UPROPERTY(Category = "Resources", EditDefaultsOnly)
+		float startingResources;
+	float currentResources;
 };
