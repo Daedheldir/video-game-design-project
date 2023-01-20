@@ -18,16 +18,14 @@ class STARFLEET_API ATurretPawnBase : public APawn, public ITurretInterface
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
 	ATurretPawnBase(const FObjectInitializer& ObjectInitializer);
 	UPROPERTY(Category = Mesh, EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		class UStaticMeshComponent* TurretBaseMesh;
-	/** StaticMesh component that will be the visuals for the turret */
 	UPROPERTY(Category = Mesh, EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		class UStaticMeshComponent* TurretHullMesh;
-	/** StaticMesh component that will be the visuals for the barrels */
 	UPROPERTY(Category = Mesh, EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		class UStaticMeshComponent* TurretBarrelMesh;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	// Called every frame
@@ -45,6 +43,12 @@ public:
 
 	void GetMuzzleSockets();
 	void SpawnMunitions(FName _MuzzleSocketName);
+
+	//Ownership
+	UFUNCTION()
+		bool IsOwnedByPlayer() const;
+	UFUNCTION()
+		void SetOwnedByPlayer(bool owned);
 
 	//ITurretInterface
 	virtual void PrimaryFireControl() override;
@@ -76,13 +80,15 @@ protected:
 		bool DEBUG_MODE;
 
 private:
-
+	bool ownedByPlayer;
 	AActor* CurrentTurretTarget;
 	bool IsFiring;
+
 	float CurrentChasisRot;
 	float CurrentBarrelRot;
 	float CurrentYawMin;
 	float CurrentYawMax;
+
 	FRotator CurrentTurretRot;
 	FRotator TurretYawRot;
 	FRotator TurretPitchRot;

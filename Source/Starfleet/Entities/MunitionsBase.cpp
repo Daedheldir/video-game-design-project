@@ -4,6 +4,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include <NiagaraComponent.h>
 #include "../Entities/EntityPawn.h"
+#include <Components/PointLightComponent.h>
 
 // Sets default values
 AMunitionsBase::AMunitionsBase()
@@ -18,21 +19,27 @@ AMunitionsBase::AMunitionsBase()
 
 	if (!CollisionComponent)
 	{
-		// Use a sphere as a simple collision representation.
 		CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
-		// Set the sphere's collision radius.
 		CollisionComponent->InitSphereRadius(15.0f);
 
-		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
+		this->SetRootComponent(CollisionComponent);
+	}
 
-		// Set the root component to be the collision component.
-		RootComponent = CollisionComponent;
+	if (!projectileParticles) {
+		projectileParticles = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Projectile Particles Component"));
+
+		projectileParticles->SetupAttachment(GetRootComponent());
+	}
+	if (!pointLight) {
+		pointLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("Point Light"));
+
+		pointLight->SetupAttachment(GetRootComponent());
 	}
 
 	if (!ProjectileMovementComponent)
 	{
-		// Use this component to drive this projectile's movement.
 		ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
+
 		ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
 		ProjectileMovementComponent->InitialSpeed = 3000.0f;
 		ProjectileMovementComponent->MaxSpeed = 3000.0f;
@@ -42,6 +49,14 @@ AMunitionsBase::AMunitionsBase()
 	}
 
 	explosionSize = 1.0f;
+	ownedByPlayer = true;
+}
+
+bool AMunitionsBase::IsOwnedByPlayer() const {
+	return ownedByPlayer;
+}
+void AMunitionsBase::SetOwnedByPlayer(bool owned) {
+	this->ownedByPlayer = owned;
 }
 
 void AMunitionsBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
@@ -49,33 +64,66 @@ void AMunitionsBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f,
 		FColor::White,
-		TEXT("AMunitionsBase::OnHit - Projectile hit a ") + OtherActor->GetName());
+		TEXT("AMunitionsBase::OnHit - Projectile hit a ") + OtherActor->GetClass()->GetName());
 
-	if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
-	{
-		OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
+	if (this->IsOwnedBy(OtherActor)) {
+		return;
 	}
+
 	if (OtherActor->IsA(AEntityPawn::StaticClass())) {
 		AEntityPawn* entity = Cast<AEntityPawn>(OtherActor);
+		if (entity->IsOwnedByPlayer()) {
+			return;
+		}
 		entity->CauseDamage(20.0f);
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f,
 			FColor::White,
 			TEXT("AMunitionsBase::OnHit - OtherActor has " + FString::Printf(L"%.1f", entity->GetHealth())));
 	}
-	UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-		GetWorld(),
-		explosionEffectBP,
-		this->GetActorLocation());
-	NiagaraComp->SetNiagaraVariableFloat(FString("ExplosionSize"), explosionSize);
 
-	Destroy();
+	if (explosionEffectBP) {
+		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			explosionEffectBP,
+			this->GetActorLocation());
+		NiagaraComp->SetNiagaraVariableFloat(FString("ExplosionSize"), explosionSize);
+	}
+	//Make projectile invisible to keep the trail
+	projectileParticles->Deactivate();
+	FTimerHandle HideLightTimerHandle;
+	FTimerDelegate HideLightDelegate;
+	HideLightDelegate.BindLambda([&]()
+		{
+			pointLight->SetVisibility(false);
+		});
+	GetWorld()->GetTimerManager().SetTimer(HideLightTimerHandle, HideLightDelegate, 0.2f, false);
+
+	FTimerHandle DestroyTimerHandle;
+	FTimerDelegate DestroyDelegate;
+	DestroyDelegate.BindLambda([&]()
+		{
+			Destroy();
+		});
+	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, DestroyDelegate, 4.0f, false);
 }
 
+#define ECC_FriendlyProjectile ECollisionChannel::ECC_GameTraceChannel4
+#define ECC_EnemyProjectile ECollisionChannel::ECC_GameTraceChannel1
 // Called when the game starts or when spawned
 void AMunitionsBase::BeginPlay()
 {
 	Super::BeginPlay();
 	if (CollisionComponent) {
+		if (IsOwnedByPlayer()) {
+			CollisionComponent->SetCollisionObjectType(ECC_FriendlyProjectile);
+			CollisionComponent->SetCollisionProfileName("FriendlyProjectile");
+			pointLight->SetTemperature(12000.0f);
+		}
+		else {
+			CollisionComponent->SetCollisionObjectType(ECC_EnemyProjectile);
+			CollisionComponent->SetCollisionProfileName("EnemyProjectile");
+			pointLight->SetTemperature(1700.0f);
+		}
 		CollisionComponent->OnComponentHit.AddDynamic(this, &AMunitionsBase::OnHit);
 	}
 }

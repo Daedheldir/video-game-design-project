@@ -4,11 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Info.h"
+#include "Entities/EEntityTypes.h"
+
 #include "InputStateInfo.generated.h"
 
 /**
  *
  */
+
 UCLASS()
 class STARFLEET_API AInputStateInfo : public AInfo
 {
@@ -24,8 +27,11 @@ public:
 		PLACING_SHIP
 	};
 
-	InputState GetCurrentInputState();
+	InputState GetCurrentInputState() const;
 	void SetCurrentInputState(InputState newState);
+	void SetLastSelectedSpawnShipButton(EntityTypes entityType);
+	EntityTypes GetLastSelectedSpawnShipButton() const;
 private:
 	InputState inputState;
+	EntityTypes lastSelectedEntityType;
 };

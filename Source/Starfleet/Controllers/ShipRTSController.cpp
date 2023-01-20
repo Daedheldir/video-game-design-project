@@ -42,7 +42,8 @@ void AShipRTSController::SetupInputComponent()
 }
 void AShipRTSController::SpawnEntity()
 {
-	SpawnEntity(EntityTypes::IMPERIAL);
+	EntityTypes selectedEntity = InputState->GetLastSelectedSpawnShipButton();
+	SpawnEntity(selectedEntity);
 }
 void AShipRTSController::SpawnEntity(EntityTypes enitityType) {
 	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("Spawn Entity"));
@@ -108,7 +109,7 @@ void AShipRTSController::SelectionReleased()
 void AShipRTSController::MoveReleased()
 {
 	FHitResult hit;
-	GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, hit);
+	GetHitResultUnderCursor(ECollisionChannel::ECC_WorldDynamic, false, hit);
 
 	if (hit.GetActor()->GetClass()->IsChildOf(AEntityPawn::StaticClass())) {
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, TEXT("Right Released at entity ") + hit.GetActor()->GetClass()->GetName());
@@ -124,7 +125,7 @@ void AShipRTSController::MoveReleased()
 			FVector actorOrgin, actorBoundsExtent;
 
 			entity->GetActorBounds(true, actorOrgin, actorBoundsExtent);
-			float locationSpacing = FMath::Max(actorBoundsExtent.X, actorBoundsExtent.Y);
+			float locationSpacing = FMath::Max(actorBoundsExtent.X, actorBoundsExtent.Y) * 2.0f;
 
 			FVector moveLocation = hit.Location + FVector(i / 2 * locationSpacing * 3, i % 2 * locationSpacing * 3, 0);
 			entity->CommandMoveTo(moveLocation);

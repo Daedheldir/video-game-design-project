@@ -5,7 +5,8 @@
 #include "../UI/Widgets/ShipSelectionUserWidget.h"
 #include "NiagaraFunctionLibrary.h"
 #include "TurretPawnBase.h"
-#include "GameFramework/SpringArmComponent.h"
+#include <GameFramework/SpringArmComponent.h>
+#include <Components/CapsuleComponent.h>
 
 // Sets default values
 AEntityPawn::AEntityPawn() :
@@ -98,7 +99,8 @@ void AEntityPawn::CommandTurretsTarget(AActor* targetActor)
 UPawnMovementComponent* AEntityPawn::GetMovementComponent() const {
 	return shipMoveComponent;
 }
-
+#define ECC_FriendlyEntity ECollisionChannel::ECC_GameTraceChannel2
+#define ECC_EnemyEntity ECollisionChannel::ECC_GameTraceChannel3
 // Called when the game starts or when spawned
 void AEntityPawn::BeginPlay()
 {
@@ -137,6 +139,17 @@ void AEntityPawn::BeginPlay()
 	}
 
 	FillTurretSockets();
+
+	if (shipStaticMesh) {
+		if (IsOwnedByPlayer()) {
+			shipStaticMesh->SetCollisionObjectType(ECC_FriendlyEntity);
+			shipStaticMesh->SetCollisionProfileName("FriendlyEntity");
+		}
+		else {
+			shipStaticMesh->SetCollisionObjectType(ECC_EnemyEntity);
+			shipStaticMesh->SetCollisionProfileName("EnemyEntity");
+		}
+	}
 }
 
 // Called every frame
@@ -145,13 +158,14 @@ void AEntityPawn::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (!IsAlive()) {
-		this->Destroy();
 		if (explosionEffectBP != nullptr) {
 			UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 				GetWorld(),
 				explosionEffectBP,
 				this->GetActorLocation());
 			NiagaraComp->SetNiagaraVariableFloat(FString("ExplosionSize"), explosionSize);
+			DestroyTurrets();
+			this->Destroy();
 		}
 	}
 
@@ -166,7 +180,7 @@ void AEntityPawn::Tick(float DeltaTime)
 			for (auto niagaraComp : engineParticleEffects) {
 				//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Command \"Move to\" given with vector ") + directionVec.ToCompactString());
 
-				niagaraComp->SetNiagaraVariableFloat(FString("acceleration"), 10.0f);
+				niagaraComp->SetNiagaraVariableFloat(FString("acceleration"), 8.0f);
 			}
 
 			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Command \"Move to\" given with vector ") + directionVec.ToCompactString());
@@ -222,6 +236,7 @@ void AEntityPawn::SpawnTurret(const FName& _TurretSocketName) {
 		SpawnParams);
 
 	RailGun_T->TurretLocalRot = SocketTransform.GetRotation().Rotator();
+	RailGun_T->SetOwnedByPlayer(this->IsOwnedByPlayer());
 
 	//TODO DIFFERENTIATE BETWEEN MIRRORED AND NOT MIRRORED TURRETS FOR CORRECT ANGLE HANDLING
 	bool mirroredSocket = _TurretSocketName.GetPlainNameString().Contains(TEXT("_R")) ? true : false;

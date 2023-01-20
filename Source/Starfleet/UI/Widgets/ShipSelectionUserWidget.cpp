@@ -24,4 +24,5 @@ void UShipSelectionUserWidget::PlayUnselectedAnimation()
 
 void UShipSelectionUserWidget::NativeConstruct()
 {
+	PlayUnselectedAnimation();
 }

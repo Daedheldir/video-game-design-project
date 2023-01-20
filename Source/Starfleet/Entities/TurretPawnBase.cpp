@@ -37,6 +37,8 @@ ATurretPawnBase::ATurretPawnBase(const FObjectInitializer& ObjectInitializer) : 
 
 	// Set this actor to call Tick() every frame. You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	ownedByPlayer = true;
 }
 
 void ATurretPawnBase::BeginPlay()
@@ -48,6 +50,8 @@ void ATurretPawnBase::BeginPlay()
 	if (DEBUG_MODE) {
 		GetMuzzleSockets();
 	}
+
+	refireDelay += (rand() % (int)(refireDelay * 10)) / 100.0f;
 }
 
 // Called every frame
@@ -65,6 +69,12 @@ void ATurretPawnBase::Tick(float DeltaTime) {
 	PrimaryFireControl();
 
 	Super::Tick(DeltaTime);
+}
+bool ATurretPawnBase::IsOwnedByPlayer() const {
+	return ownedByPlayer;
+}
+void ATurretPawnBase::SetOwnedByPlayer(bool owned) {
+	this->ownedByPlayer = owned;
 }
 
 void ATurretPawnBase::SetCurrentTurretTarget(AActor* newTarget)
@@ -98,7 +108,7 @@ void ATurretPawnBase::TurretLookAt() {
 	CurrentTurretRot = FRotator(TurretHullMesh->GetRelativeTransform().GetRotation());
 
 	//DEBUG DRAWING
-	DrawDebugDirectionalArrow(GetWorld(), TurretLocation, TurretLocation + TurretToTarget, 25.0f, FColor::Green, false, 0.1f);
+	//DrawDebugDirectionalArrow(GetWorld(), TurretLocation, TurretLocation + TurretToTarget, 25.0f, FColor::Green, false, 0.1f);
 	//DrawDebugDirectionalArrow(GetWorld(), TurretLocation, TurretLocation + 150 * TurretMaxYawRotator.Vector(), 25.0f, FColor::Red, false, 0.1f);
 	//DrawDebugDirectionalArrow(GetWorld(), TurretLocation, TurretLocation + 150 * TurretMinYawRotator.Vector(), 25.0f, FColor::Red, false, 0.1f);
 
@@ -166,6 +176,7 @@ void ATurretPawnBase::SpawnMunitions(FName _MuzzleSocketName) {
 
 			// We give the projectiles an owner! This can be used later for hit detection and the like!
 			Projectile->Owner = this->GetAttachParentActor();
+			Projectile->SetOwnedByPlayer(this->IsOwnedByPlayer());
 		}
 		else {
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f,
@@ -190,6 +201,6 @@ void ATurretPawnBase::SpawnMunitions(FName _MuzzleSocketName) {
 				TEXT("ATurretPawnBase::SpawnMunitions - MunitionsParticleEffectBP for turrets is not assigned!"));
 		}
 		//DrawDebugSphere(GetWorld(), SpawnLocation, 25.0f, 16, FColor(255, 0, 0), false, 10.0f);
-		DrawDebugDirectionalArrow(GetWorld(), SpawnLocation, SpawnLocation + 50 * SpawnRotation.Vector(), 25.0f, FColor::Red, false, 10.0f);
+		//DrawDebugDirectionalArrow(GetWorld(), SpawnLocation, SpawnLocation + 50 * SpawnRotation.Vector(), 25.0f, FColor::Red, false, 10.0f);
 	}
 }

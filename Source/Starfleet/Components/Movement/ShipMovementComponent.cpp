@@ -38,15 +38,21 @@ void UShipMovementComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 
 	FVector currentInputVector = ConsumeInputVector().GetClampedToMaxSize(1.0f);
 	FVector desiredMovementThisFrame = currentInputVector * DeltaTime * GetMaxSpeed();
-	FVector desiredForwardMovementThisFrame = UpdatedComponent->GetForwardVector() * DeltaTime * GetMaxSpeed();
+	FVector desiredForwardMovementThisFrame = FMath::Lerp(
+		UpdatedComponent->GetForwardVector() * DeltaTime * GetMaxSpeed(),
+		desiredMovementThisFrame,
+		0.3);
 	//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Processing command \"Move to\" of object ") + UpdatedComponent->GetName() + FString::Printf(TEXT(", Vector is %f"), GetMaxSpeed()));
 
 	double angleDifference = (currentInputVector.HeadingAngle()) - (UpdatedComponent->GetForwardVector().HeadingAngle());
 	if (angleDifference > PI) {
 		angleDifference -= 2 * PI;
 	}
+	else if (angleDifference < -PI) {
+		angleDifference += 2 * PI;
+	}
 
-	if (!desiredMovementThisFrame.IsNearlyZero(0.1)) {
+	if (!desiredMovementThisFrame.IsNearlyZero(10.0)) {
 		double desiredAngleThisFrame = UpdatedComponent->GetForwardVector().HeadingAngle();
 
 		if (std::abs(angleDifference) >= GetMaxAngularSpeed() * DeltaTime)
@@ -67,7 +73,6 @@ void UShipMovementComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 		{
 			SlideAlongSurface(desiredMovementThisFrame, 1.f - Hit.Time, Hit.Normal, Hit);
 		}
-
-		UpdateComponentVelocity();
 	}
+	UpdateComponentVelocity();
 }

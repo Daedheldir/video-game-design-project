@@ -7,6 +7,7 @@
 #include <Runtime/UMG/Public/Components/Button.h>
 #include <Runtime/UMG/Public/Components/TextBlock.h>
 #include <Kismet/GameplayStatics.h>
+#include "../../Entities/EEntityTypes.h"
 
 #include "CommandPointsHUDWidget.generated.h"
 
@@ -15,6 +16,7 @@ class AEntityManagerActor;
 /**
  *
  */
+
 UCLASS()
 class STARFLEET_API UCommandPointsHUDWidget : public UUserWidget
 {
@@ -28,7 +30,13 @@ protected:
 	void InitializePlayerEntityManagerPtr();
 
 	UFUNCTION()
-		void OnClicked();
+		void OnClickedSpawnImperial();
+	UFUNCTION()
+		void OnClickedSpawnInsurgent();
+	UFUNCTION()
+		void OnClickedSpawnStriker();
+	UFUNCTION()
+		void OnClickedSpawnShip(EntityTypes NewScore);
 private:
 	template<class T>
 	inline T* InitializePtrTemplate(const FString& tag)
@@ -61,4 +69,14 @@ protected:
 		UTextBlock* spawnShip1Text;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UButton* spawnShip1Button;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UTextBlock* spawnShip2Text;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UButton* spawnShip2Button;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UTextBlock* spawnShip3Text;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UButton* spawnShip3Button;
 };

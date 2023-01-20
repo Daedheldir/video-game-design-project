@@ -10,6 +10,8 @@
 #include "MunitionsBase.generated.h"
 
 class UNiagaraSystem;
+class UNiagaraComponent;
+class UPointLightComponent;
 
 UCLASS(Abstract)
 class STARFLEET_API AMunitionsBase : public AActor
@@ -19,6 +21,11 @@ class STARFLEET_API AMunitionsBase : public AActor
 public:
 	// Sets default values for this pawn's properties
 	AMunitionsBase();
+
+	UFUNCTION()
+		bool IsOwnedByPlayer() const;
+	UFUNCTION()
+		void SetOwnedByPlayer(bool owned);
 
 	UFUNCTION()
 		void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
@@ -34,10 +41,18 @@ public:
 protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Collision")
 		USphereComponent* CollisionComponent;
+	UPROPERTY(VisibleAnywhere, Category = "Collision")
+		bool ownedByPlayer;
 	UPROPERTY(VisibleAnywhere, Category = "Movement")
 		UProjectileMovementComponent* ProjectileMovementComponent;
-	UPROPERTY(EditDefaultsOnly, Category = "Particles")
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Light")
+		UPointLightComponent* pointLight;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Particles")
+		UNiagaraComponent* projectileParticles;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Particles")
 		UNiagaraSystem* explosionEffectBP;
-	UPROPERTY(EditDefaultsOnly, Category = "Particles")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Particles")
 		float explosionSize;
 };
