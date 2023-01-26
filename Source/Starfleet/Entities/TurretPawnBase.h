@@ -74,13 +74,17 @@ public:
 
 	UPROPERTY(Category = "Turret | Control", BlueprintReadWrite, EditDefaultsOnly)
 		float refireDelay;
+	UPROPERTY(Category = "Turret | Control", BlueprintReadWrite, EditDefaultsOnly)
+		float MaxRange;
+
 	float currentTime;
 protected:
 	UPROPERTY(Category = DEBUG, BlueprintReadWrite, EditDefaultsOnly)
 		bool DEBUG_MODE;
 
 private:
-	bool ownedByPlayer;
+	UPROPERTY(Category = "Turret | Control", VisibleAnywhere)
+		bool ownedByPlayer;
 	AActor* CurrentTurretTarget;
 	bool IsFiring;
 

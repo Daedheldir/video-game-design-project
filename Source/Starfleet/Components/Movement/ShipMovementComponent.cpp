@@ -65,7 +65,7 @@ void UShipMovementComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 		FHitResult Hit;
 
 		if (!SafeMoveUpdatedComponent(desiredForwardMovementThisFrame, rotationQuat, true, Hit)) {
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("MoveUpdatedComponent returned false"));
+			check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("MoveUpdatedComponent returned false"));
 		}
 
 		// If we bumped into something, try to slide along it

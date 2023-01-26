@@ -46,7 +46,7 @@ private:
 
 		if (foundActors.Num() > 0) {
 			if (foundActors.Num() > 1) {
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("UCommandPointsHUDWidget::InitializePtrTemplate found multiple actors with tag " + tag));
+				check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("UCommandPointsHUDWidget::InitializePtrTemplate found multiple actors with tag " + tag));
 			}
 			if (foundActors[0] != nullptr) {
 				T* ptr = Cast<T>(foundActors[0]);

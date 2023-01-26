@@ -62,7 +62,7 @@ void AMunitionsBase::SetOwnedByPlayer(bool owned) {
 void AMunitionsBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f,
+	check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f,
 		FColor::White,
 		TEXT("AMunitionsBase::OnHit - Projectile hit a ") + OtherActor->GetClass()->GetName());
 
@@ -72,11 +72,9 @@ void AMunitionsBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor
 
 	if (OtherActor->IsA(AEntityPawn::StaticClass())) {
 		AEntityPawn* entity = Cast<AEntityPawn>(OtherActor);
-		if (entity->IsOwnedByPlayer()) {
-			return;
-		}
+
 		entity->CauseDamage(20.0f);
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f,
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f,
 			FColor::White,
 			TEXT("AMunitionsBase::OnHit - OtherActor has " + FString::Printf(L"%.1f", entity->GetHealth())));
 	}
@@ -115,11 +113,18 @@ void AMunitionsBase::BeginPlay()
 	Super::BeginPlay();
 	if (CollisionComponent) {
 		if (IsOwnedByPlayer()) {
+			check(GEngine); GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.0f,
+				FColor::White,
+				TEXT("Projectile is owned by player"));
+
 			CollisionComponent->SetCollisionObjectType(ECC_FriendlyProjectile);
 			CollisionComponent->SetCollisionProfileName("FriendlyProjectile");
 			pointLight->SetTemperature(12000.0f);
 		}
 		else {
+			check(GEngine); GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.0f,
+				FColor::White,
+				TEXT("Projectile is owned by enemy"));
 			CollisionComponent->SetCollisionObjectType(ECC_EnemyProjectile);
 			CollisionComponent->SetCollisionProfileName("EnemyProjectile");
 			pointLight->SetTemperature(1700.0f);

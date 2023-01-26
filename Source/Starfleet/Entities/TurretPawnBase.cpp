@@ -3,6 +3,7 @@
 #include "TurretPawnBase.h"
 #include "NiagaraFunctionLibrary.h"
 #include "MunitionsBase.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ATurretPawnBase::ATurretPawnBase(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
@@ -17,6 +18,7 @@ ATurretPawnBase::ATurretPawnBase(const FObjectInitializer& ObjectInitializer) : 
 	// Set default variables
 	currentTime = 0.0f;
 	refireDelay = 3.0f;
+	MaxRange = 10000.0f;
 
 	IsOccupied = false;
 	IsFiring = false;
@@ -149,8 +151,10 @@ void ATurretPawnBase::TurretLookAt() {
 // So if the turrets cannot see your cameras focal point they wont fire!
 void ATurretPawnBase::PrimaryFireControl() {
 	if (IsTargeting && currentTime >= refireDelay) {
-		currentTime = 0.0f;
-		GetMuzzleSockets();
+		if (FVector::Distance(this->GetActorLocation(), CurrentTurretTarget->GetActorLocation()) <= MaxRange) {
+			currentTime = 0.0f;
+			GetMuzzleSockets();
+		}
 	}
 }
 
@@ -168,18 +172,23 @@ void ATurretPawnBase::SpawnMunitions(FName _MuzzleSocketName) {
 		// Get the location and the rotation for the new projectile
 		FVector SpawnLocation = TurretBarrelMesh->GetSocketLocation(_MuzzleSocketName);
 		FRotator SpawnRotation = TurretBarrelMesh->GetSocketRotation(_MuzzleSocketName);
+		FTransform ProjectileTransform{ SpawnRotation , SpawnLocation };
 
 		// Making sure the world exists, if it does we spawn it!
 		UWorld* const World = GetWorld();
 		if (World) {
-			AMunitionsBase* Projectile = World->SpawnActor<AMunitionsBase>(MunitionsBP, SpawnLocation, SpawnRotation);
+			AMunitionsBase* Projectile = World->SpawnActorDeferred<AMunitionsBase>(
+				MunitionsBP->GetDefaultObject()->GetClass(),
+				ProjectileTransform,
+				this->GetAttachParentActor(),
+				this);
 
 			// We give the projectiles an owner! This can be used later for hit detection and the like!
-			Projectile->Owner = this->GetAttachParentActor();
 			Projectile->SetOwnedByPlayer(this->IsOwnedByPlayer());
+			UGameplayStatics::FinishSpawningActor(Projectile, ProjectileTransform);
 		}
 		else {
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f,
+			check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f,
 				FColor::Red,
 				TEXT("ATurretPawnBase::SpawnMunitions - World for turrets is null!"));
 		}
@@ -196,7 +205,7 @@ void ATurretPawnBase::SpawnMunitions(FName _MuzzleSocketName) {
 				true);
 		}
 		else {
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f,
+			check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f,
 				FColor::Red,
 				TEXT("ATurretPawnBase::SpawnMunitions - MunitionsParticleEffectBP for turrets is not assigned!"));
 		}

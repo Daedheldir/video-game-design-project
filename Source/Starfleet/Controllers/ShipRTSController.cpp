@@ -46,9 +46,9 @@ void AShipRTSController::SpawnEntity()
 	SpawnEntity(selectedEntity);
 }
 void AShipRTSController::SpawnEntity(EntityTypes enitityType) {
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("Spawn Entity"));
+	check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("Spawn Entity"));
 	if (this->entityManager == nullptr) {
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("EntityManager not found!"));
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("EntityManager not found!"));
 		return;
 	}
 	FHitResult hit;
@@ -60,18 +60,18 @@ void AShipRTSController::SelectionPressed()
 	switch (InputState->GetCurrentInputState())
 	{
 	case AInputStateInfo::InputState::NONE:
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionPressed, InputState::NONE"));
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionPressed, InputState::NONE"));
 
 		HUDptr->bStartSelecting = true;
 		HUDptr->InitialSelectionPoint = HUDptr->GetMousePosition2D();
 		InputState->SetCurrentInputState(AInputStateInfo::InputState::SELECTING);
 		break;
 	case AInputStateInfo::InputState::SELECTING:
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionPressed, InputState::SELECTING"));
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionPressed, InputState::SELECTING"));
 
 		break;
 	case AInputStateInfo::InputState::PLACING_SHIP:
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionPressed, InputState::PLACING_SHIP"));
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionPressed, InputState::PLACING_SHIP"));
 
 		break;
 	default:
@@ -84,11 +84,11 @@ void AShipRTSController::SelectionReleased()
 	switch (InputState->GetCurrentInputState())
 	{
 	case AInputStateInfo::InputState::NONE:
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionReleased, InputState::NONE"));
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionReleased, InputState::NONE"));
 
 		break;
 	case AInputStateInfo::InputState::SELECTING:
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionReleased, InputState::SELECTING"));
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionReleased, InputState::SELECTING"));
 
 		HUDptr->bStartSelecting = false;
 		selectedEntities = HUDptr->foundEntities;
@@ -96,7 +96,7 @@ void AShipRTSController::SelectionReleased()
 		break;
 	case AInputStateInfo::InputState::PLACING_SHIP:
 		//spawn ship and go back to none
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionReleased, InputState::PLACING_SHIP"));
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("SelectionReleased, InputState::PLACING_SHIP"));
 
 		SpawnEntity();
 		InputState->SetCurrentInputState(AInputStateInfo::InputState::NONE);
@@ -112,7 +112,7 @@ void AShipRTSController::MoveReleased()
 	GetHitResultUnderCursor(ECollisionChannel::ECC_WorldDynamic, false, hit);
 
 	if (hit.GetActor()->GetClass()->IsChildOf(AEntityPawn::StaticClass())) {
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, TEXT("Right Released at entity ") + hit.GetActor()->GetClass()->GetName());
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, TEXT("Right Released at entity ") + hit.GetActor()->GetClass()->GetName());
 		if (!Cast<AEntityPawn>(hit.GetActor())->IsOwnedByPlayer()) { //if its enemy then make turrets target it
 			for (int i = 0; i < selectedEntities.Num(); ++i) {
 				selectedEntities[i]->CommandTurretsTarget(hit.GetActor());
@@ -132,7 +132,7 @@ void AShipRTSController::MoveReleased()
 
 			DrawDebugSphere(GetWorld(), moveLocation, 50.0f, 16, FColor(255, 255, 255), false, 10.0f);
 		}
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, TEXT("Move Released at ") + hit.Location.ToCompactString());
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, TEXT("Move Released at ") + hit.Location.ToCompactString());
 	}
 }
 

@@ -22,31 +22,31 @@ bool AEntityManagerActor::SpawnEntityAtLocation(const EntityTypes& entityType, c
 	spawnParams.bNoFail = true;
 
 	if (!entityBlueprints.Contains(entityType)) {
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Spawn Entity: Entity not found in blueprints"));
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Spawn Entity: Entity not found in blueprints"));
 		return false;
 	}
 
 	if (!entitySpawnCosts.Contains(entityType)) {
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Spawn Entity: Entity has no associated cost"));
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Spawn Entity: Entity has no associated cost"));
 		return false;
 	}
 
 	if (entitySpawnCosts[entityType] > currentResources) {
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Spawn Entity: not enough points to spawn entity"));
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Spawn Entity: not enough points to spawn entity"));
 		return false;
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("Spawn Entity: at ") + location.ToCompactString());
+	check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("Spawn Entity: at ") + location.ToCompactString());
 
 	newEntity = GetWorld()->SpawnActor<AEntityPawn>(entityBlueprints[entityType]->GetDefaultObject()->GetClass(), FVector(location.X, location.Y, 0), FRotator::ZeroRotator, spawnParams);
 	if (newEntity == nullptr) {
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Spawn Entity: Entity SpawnActor returned null!"));
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Spawn Entity: Entity SpawnActor returned null!"));
 		return false;
 	}
 
 	currentResources -= entitySpawnCosts[entityType];
 
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("Spawn Entity: Adding entity ") + newEntity->GetName() + TEXT(" to array"));
+	check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, TEXT("Spawn Entity: Adding entity ") + newEntity->GetName() + TEXT(" to array"));
 	spawnedEntities.Add(newEntity);
 	return true;
 }

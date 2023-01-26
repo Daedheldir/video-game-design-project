@@ -23,7 +23,7 @@ void UCommandPointsHUDWidget::NativeTick(const FGeometry& MyGeometry, float InDe
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
 	if (!PlayerEntityManager) {
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("UCommandPointsHUDWidget::NativeTick PlayerEntityManager is null!"));
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("UCommandPointsHUDWidget::NativeTick PlayerEntityManager is null!"));
 		InitializePlayerEntityManagerPtr();
 	}
 	if (PlayerEntityManager) {
@@ -51,7 +51,7 @@ void UCommandPointsHUDWidget::OnClickedSpawnStriker() {
 }
 void UCommandPointsHUDWidget::OnClickedSpawnShip(EntityTypes entityType) {
 	if (!InputStateInfo) {
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("UCommandPointsHUDWidget::OnClicked InputStateInfo is null!"));
+		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("UCommandPointsHUDWidget::OnClicked InputStateInfo is null!"));
 		InitializeInputStatePtr();
 	}
 	if (InputStateInfo) {
@@ -59,5 +59,5 @@ void UCommandPointsHUDWidget::OnClickedSpawnShip(EntityTypes entityType) {
 		InputStateInfo->SetLastSelectedSpawnShipButton(entityType);
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Spawn S1 pressed"));
+	check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Spawn S1 pressed"));
 }

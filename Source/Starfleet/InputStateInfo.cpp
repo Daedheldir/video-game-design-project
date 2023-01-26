@@ -30,7 +30,7 @@ void AInputStateInfo::SetCurrentInputState(InputState newState)
 		newStateName = "PLACING_SHIP";
 		break;
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("AInputStateInfo::SetCurrentInputState, new input state is " + newStateName));
+	check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("AInputStateInfo::SetCurrentInputState, new input state is " + newStateName));
 }
 void AInputStateInfo::SetLastSelectedSpawnShipButton(EntityTypes entityType) {
 	lastSelectedEntityType = entityType;

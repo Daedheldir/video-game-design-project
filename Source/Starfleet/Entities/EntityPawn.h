@@ -22,28 +22,30 @@ public:
 	// Sets default values for this pawn's properties
 	AEntityPawn();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void SetSelected(const bool selected);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		bool IsCurrentlySelected() const;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		bool IsOwnedByPlayer() const;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		bool IsAlive() const;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void CauseDamage(const float damageVal);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void SetHealth(const float health);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		float GetHealth() const;
 
-	void CommandMoveTo(const FVector& destination);
-	void CommandTurretsTarget(AActor* targetActor);
+	UFUNCTION(BlueprintCallable)
+		void CommandMoveTo(const FVector& destination);
+	UFUNCTION(BlueprintCallable)
+		void CommandTurretsTarget(AActor* targetActor);
 
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
@@ -92,6 +94,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Meta = (MakeEditWidget = true))
 		TArray<FTransform> engineParticleEffectsPositions;
 
+	//destruction geometry
+	UPROPERTY(EditDefaultsOnly, Category = "Destruction")
+		TSubclassOf<AActor> DestructionGeometryActorBP;
 	//destruction particles
 	UPROPERTY(EditDefaultsOnly, Category = "Particles")
 		UNiagaraSystem* explosionEffectBP;

@@ -7,6 +7,7 @@
 #include "TurretPawnBase.h"
 #include <GameFramework/SpringArmComponent.h>
 #include <Components/CapsuleComponent.h>
+//#include <GeometryCollection/GeometryCollectionComponent.h>
 
 // Sets default values
 AEntityPawn::AEntityPawn() :
@@ -36,12 +37,19 @@ AEntityPawn::AEntityPawn() :
 
 void AEntityPawn::SetSelected(const bool selected)
 {
+	if (shipSelectionWidget == nullptr)
+		return;
+
 	UShipSelectionUserWidget* selectionWidget = Cast<UShipSelectionUserWidget>(shipSelectionWidget->GetWidget());
+	check(GEngine);
 	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.f, FColor::White,
 		FString::Printf(TEXT("Ship is now %s, request to %s"),
 			isSelected ? TEXT("selected") : TEXT("unselected"),
 			selected ? TEXT("select") : TEXT("unselect"))
 	);
+
+	if (selectionWidget == nullptr)
+		return;
 
 	if (selected && !IsCurrentlySelected()) {	//if entity isn't currently selected then play select animation
 		selectionWidget->PlaySelectedAnimation();
@@ -65,10 +73,7 @@ bool AEntityPawn::IsOwnedByPlayer() const
 
 bool AEntityPawn::IsAlive() const
 {
-	if (fHealth > 0.0f)
-		return true;
-
-	return false;
+	return fHealth > 0.0f;
 }
 
 void AEntityPawn::CauseDamage(const float damageVal)
@@ -164,14 +169,27 @@ void AEntityPawn::Tick(float DeltaTime)
 				explosionEffectBP,
 				this->GetActorLocation());
 			NiagaraComp->SetNiagaraVariableFloat(FString("ExplosionSize"), explosionSize);
-			DestroyTurrets();
-			this->Destroy();
+		}
+
+		DestroyTurrets();
+		this->Destroy();
+
+		if (DestructionGeometryActorBP != nullptr) {
+			UWorld* World = GetWorld();
+			check(World);
+			FActorSpawnParameters spawnParams;
+			spawnParams.Owner = this->GetOwner();
+
+			AActor* DestructionActorWorld = World->SpawnActor<AActor>(
+				DestructionGeometryActorBP->GetDefaultObject()->GetClass(),
+				this->GetTransform(),
+				spawnParams);
 		}
 	}
 
 	FVector currentLocation = GetActorLocation();
 
-	if (FVector::Dist2D(currentLocation, moveTargetPosition) > 10.0f) {
+	if (FVector::Dist2D(currentLocation, moveTargetPosition) > 200.0f) {
 		FVector directionVec = { moveTargetPosition.X - currentLocation.X, moveTargetPosition.Y - currentLocation.Y, 0 };
 		directionVec = directionVec.GetClampedToMaxSize(1.0f);
 
@@ -179,22 +197,23 @@ void AEntityPawn::Tick(float DeltaTime)
 			GetMovementComponent()->AddInputVector(directionVec, true);
 			for (auto niagaraComp : engineParticleEffects) {
 				//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Command \"Move to\" given with vector ") + directionVec.ToCompactString());
-
-				niagaraComp->SetNiagaraVariableFloat(FString("acceleration"), 8.0f);
+				if (niagaraComp)
+					niagaraComp->SetNiagaraVariableFloat(FString("acceleration"), 8.0f);
 			}
 
 			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Command \"Move to\" given with vector ") + directionVec.ToCompactString());
 		}
 		else {
-			GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.0f, FColor::Red, TEXT("GetMovementComponent() returned nullptr!"));
+			check(GEngine); GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.0f, FColor::Red, TEXT("GetMovementComponent() returned nullptr!"));
 		}
 	}
 	else {
 		for (auto niagaraComp : engineParticleEffects) {
-			if (niagaraComp->IsActive()) {
-				//niagaraComp->SetActive(false);
-				niagaraComp->SetNiagaraVariableFloat(FString("acceleration"), 1.0f);
-			}
+			if (niagaraComp)
+				if (niagaraComp->IsActive()) {
+					//niagaraComp->SetActive(false);
+					niagaraComp->SetNiagaraVariableFloat(FString("acceleration"), 1.0f);
+				}
 		}
 	}
 }
@@ -222,7 +241,7 @@ void AEntityPawn::SpawnTurret(const FName& _TurretSocketName) {
 	UWorld* const World = GetWorld();
 
 	if (World == nullptr || TurretBP == nullptr) {
-		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.0f, FColor::Red,
+		check(GEngine); GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.0f, FColor::Red,
 			TEXT("World or TurretBP was null!"));
 		return;
 	}

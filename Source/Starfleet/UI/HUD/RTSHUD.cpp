@@ -11,16 +11,16 @@ ARTSHUD::ARTSHUD() {
 void ARTSHUD::BeginPlay() {
 	Super::BeginPlay();
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Creating command points menu"));
+	check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Creating command points menu"));
 	if (commandPointsMenuBP) {
 		commandPointsMenu = CreateWidget<UCommandPointsHUDWidget>(GetWorld()->GetFirstPlayerController(), commandPointsMenuBP, "CommandPointsMenu");
 		if (commandPointsMenu != nullptr)
 		{
 			commandPointsMenu->AddToViewport();
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Command points menu added to viewport"));
+			check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Command points menu added to viewport"));
 		}
 		else {
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Command points menu bp not assigned!"));
+			check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Command points menu bp not assigned!"));
 		}
 	}
 }
@@ -64,7 +64,8 @@ void ARTSHUD::DrawHUD()
 
 		//deselect entities which were previously found and are no longer selected
 		for (auto& entity : previouslyFoundEntities) {
-			entity->SetSelected(false);
+			if (entity != nullptr)
+				entity->SetSelected(false);
 		}
 	}
 }
