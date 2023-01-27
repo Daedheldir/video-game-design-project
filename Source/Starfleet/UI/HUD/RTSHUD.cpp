@@ -36,6 +36,7 @@ void ARTSHUD::DrawHUD()
 			CurrentSelectionPosition.Y - InitialSelectionPoint.Y);
 
 		TArray<AEntityPawn*> previouslyFoundEntities = foundEntities;
+		previouslyFoundEntities.RemoveAllSwap([](AEntityPawn* a) {return a == nullptr; });
 
 		//if (foundEntities.Num() > 0) {
 		//	for (auto & entity : foundEntities) {
@@ -64,8 +65,10 @@ void ARTSHUD::DrawHUD()
 
 		//deselect entities which were previously found and are no longer selected
 		for (auto& entity : previouslyFoundEntities) {
-			if (entity != nullptr)
-				entity->SetSelected(false);
+			if (entity == nullptr)
+				continue;
+
+			entity->SetSelected(false);
 		}
 	}
 }

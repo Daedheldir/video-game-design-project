@@ -4,6 +4,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "MunitionsBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "EntityPawn.h"
 
 // Sets default values
 ATurretPawnBase::ATurretPawnBase(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
@@ -96,14 +97,28 @@ void ATurretPawnBase::TurretLookAt() {
 	}
 
 	// Get Camera Vector & Rotator
-	FVector TargetLocation = CurrentTurretTarget->GetTransform().GetLocation();
+	FVector TargetLocation = CurrentTurretTarget->GetTargetLocation(this);
+	FVector TargetMovementDirection = CurrentTurretTarget->GetTransform().GetRotation().GetForwardVector();
+	AEntityPawn* entity = Cast<AEntityPawn>(CurrentTurretTarget);
+	FVector TargetVelocity = entity != nullptr ? entity->GetCurrentVelocity() : FVector::ZeroVector;
+
+	//check(GEngine);
+	//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TargetVelocity.ToCompactString());
 
 	// Get Turrets Vector & Rotator
 	FVector TurretLocation = GetActorLocation();
 	FRotator TurretRotationWorld = TurretHullMesh->GetComponentRotation();
 
+	float distanceToTarget = FVector::Dist(TurretLocation, TargetLocation);
+	float timeToTarget = distanceToTarget / 6000.0f;
+
+	FVector PredictedTargetLocation = TargetLocation + TargetVelocity * timeToTarget;
+	FVector TargetSize, TargetOrigin;
+	CurrentTurretTarget->GetActorBounds(true, TargetOrigin, TargetSize);
+	PredictedTargetLocation += FMath::VRand() * TargetSize * AccuracyDeviation;
+
 	// Handle Turret Rotation
-	FVector TurretToTarget = TargetLocation - TurretLocation;
+	FVector TurretToTarget = PredictedTargetLocation - TurretLocation;
 	FVector TurretToTargetLocal = TurretRotationWorld.UnrotateVector(TurretToTarget);
 	FRotator TurretTargetLookDirection = TurretToTargetLocal.Rotation();
 	FRotator TurretYaw = FRotator(0, TurretTargetLookDirection.Yaw, 0);

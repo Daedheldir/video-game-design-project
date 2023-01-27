@@ -39,6 +39,8 @@ void AEntityPawn::SetSelected(const bool selected)
 {
 	if (shipSelectionWidget == nullptr)
 		return;
+	if (shipSelectionWidget->GetWidget() == nullptr)
+		return;
 
 	UShipSelectionUserWidget* selectionWidget = Cast<UShipSelectionUserWidget>(shipSelectionWidget->GetWidget());
 	check(GEngine);
@@ -88,6 +90,15 @@ void AEntityPawn::SetHealth(const float health)
 
 float AEntityPawn::GetHealth() const {
 	return fHealth;
+}
+
+FVector AEntityPawn::GetCurrentVelocity() const
+{
+	UShipMovementComponent* movementComponent = Cast<UShipMovementComponent>(GetMovementComponent());
+	if (movementComponent != nullptr)
+		return movementComponent->GetCurrentSpeed();
+	else
+		return FVector::ZeroVector;
 }
 
 void AEntityPawn::CommandMoveTo(const FVector& destination) {

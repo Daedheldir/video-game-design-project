@@ -29,7 +29,7 @@ public:
 
 	UFUNCTION()
 		void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-			UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+			UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

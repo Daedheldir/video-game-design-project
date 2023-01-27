@@ -76,6 +76,8 @@ public:
 		float refireDelay;
 	UPROPERTY(Category = "Turret | Control", BlueprintReadWrite, EditDefaultsOnly)
 		float MaxRange;
+	UPROPERTY(Category = "Turret | Control", BlueprintReadWrite, EditDefaultsOnly)
+		float AccuracyDeviation;
 
 	float currentTime;
 protected:

@@ -53,6 +53,9 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 		TSubclassOf<AEntityManagerActor> entityManager_BP_Class;
 	AEntityManagerActor* entityManager;
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<AEntityManagerActor> enemyEntityManager_BP_Class;
+	AEntityManagerActor* enemyEntityManager;
 
 	//entity selection
 	TArray<AEntityPawn*> selectedEntities;

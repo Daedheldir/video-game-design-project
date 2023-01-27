@@ -18,9 +18,12 @@ public:
 	// Sets default values for this actor's properties
 	AEntityManagerActor();
 
-	bool SpawnEntityAtLocation(const EntityTypes& entityType, const FVector& location);
+	UFUNCTION(BlueprintCallable)
+		bool SpawnEntityAtLocation(const EntityTypes& entityType, const FVector& location);
 
 	float GetCurrentResourcesValue() const;
+
+	void SpawnRandomFleet();
 
 protected:
 	// Called when the game starts or when spawned
@@ -32,15 +35,15 @@ public:
 
 protected:
 	//----------------ENTITIES-------------------
-	UPROPERTY(Category = "Entities", EditDefaultsOnly)
+	UPROPERTY(Category = "Entities", EditDefaultsOnly, BlueprintReadWrite)
 		TMap<EntityTypes, TSubclassOf<AEntityPawn>> entityBlueprints;
-	UPROPERTY(Category = "Entities", EditDefaultsOnly)
+	UPROPERTY(Category = "Entities", EditDefaultsOnly, BlueprintReadWrite)
 		TMap<EntityTypes, float> entitySpawnCosts;
 
 	TArray<AEntityPawn*> spawnedEntities;
 
 	//----------------RESOURCES-------------------
-	UPROPERTY(Category = "Resources", EditDefaultsOnly)
+	UPROPERTY(Category = "Resources", EditDefaultsOnly, BlueprintReadWrite)
 		float startingResources;
 	float currentResources;
 };

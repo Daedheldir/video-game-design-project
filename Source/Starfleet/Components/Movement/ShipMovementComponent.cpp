@@ -23,6 +23,11 @@ inline float UShipMovementComponent::GetMaxSpeed() const {
 	return fMaxSpeed;
 }
 
+FVector UShipMovementComponent::GetCurrentSpeed() const
+{
+	return CurrentVelocity;
+}
+
 inline float UShipMovementComponent::GetForwardAcceleration() const {
 	return fForwardAcceleration;
 }
@@ -51,7 +56,7 @@ void UShipMovementComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 	else if (angleDifference < -PI) {
 		angleDifference += 2 * PI;
 	}
-
+	CurrentVelocity = { 0,0,0 };
 	if (!desiredMovementThisFrame.IsNearlyZero(10.0)) {
 		double desiredAngleThisFrame = UpdatedComponent->GetForwardVector().HeadingAngle();
 
@@ -73,6 +78,7 @@ void UShipMovementComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 		{
 			SlideAlongSurface(desiredMovementThisFrame, 1.f - Hit.Time, Hit.Normal, Hit);
 		}
+		CurrentVelocity = desiredForwardMovementThisFrame / DeltaTime;
 	}
 	UpdateComponentVelocity();
 }

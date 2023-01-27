@@ -60,7 +60,7 @@ void AMunitionsBase::SetOwnedByPlayer(bool owned) {
 }
 
 void AMunitionsBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+	UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
 {
 	check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 5.0f,
 		FColor::White,
@@ -129,7 +129,7 @@ void AMunitionsBase::BeginPlay()
 			CollisionComponent->SetCollisionProfileName("EnemyProjectile");
 			pointLight->SetTemperature(1700.0f);
 		}
-		CollisionComponent->OnComponentHit.AddDynamic(this, &AMunitionsBase::OnHit);
+		CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMunitionsBase::OnHit);
 	}
 }
 

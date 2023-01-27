@@ -43,6 +43,9 @@ public:
 		float GetHealth() const;
 
 	UFUNCTION(BlueprintCallable)
+		FVector GetCurrentVelocity() const;
+
+	UFUNCTION(BlueprintCallable)
 		void CommandMoveTo(const FVector& destination);
 	UFUNCTION(BlueprintCallable)
 		void CommandTurretsTarget(AActor* targetActor);

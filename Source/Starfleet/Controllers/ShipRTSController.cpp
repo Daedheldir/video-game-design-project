@@ -21,6 +21,13 @@ void AShipRTSController::BeginPlay()
 	InputState = GetWorld()->SpawnActor<AInputStateInfo>(AInputStateInfo::StaticClass());
 	entityManager = GetWorld()->SpawnActor<AEntityManagerActor>(entityManager_BP_Class);
 	entityManager->Tags.Add("PlayerEntityManager");
+
+	enemyEntityManager = GetWorld()->SpawnActor<AEntityManagerActor>(
+		enemyEntityManager_BP_Class,
+		FTransform(FVector{ 50000,0,0 })
+		);
+
+	enemyEntityManager->SpawnRandomFleet();
 }
 
 void AShipRTSController::SetupInputComponent()
@@ -110,18 +117,27 @@ void AShipRTSController::MoveReleased()
 {
 	FHitResult hit;
 	GetHitResultUnderCursor(ECollisionChannel::ECC_WorldDynamic, false, hit);
+	AActor* hitActor = hit.GetActor();
 
-	if (hit.GetActor()->GetClass()->IsChildOf(AEntityPawn::StaticClass())) {
+	if(hitActor == nullptr)
+		return;
+
+	if (hitActor->GetClass()->IsChildOf(AEntityPawn::StaticClass())) {
 		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, TEXT("Right Released at entity ") + hit.GetActor()->GetClass()->GetName());
-		if (!Cast<AEntityPawn>(hit.GetActor())->IsOwnedByPlayer()) { //if its enemy then make turrets target it
-			for (int i = 0; i < selectedEntities.Num(); ++i) {
-				selectedEntities[i]->CommandTurretsTarget(hit.GetActor());
+		AEntityPawn* hitEntity = Cast<AEntityPawn>(hitActor);
+		if(hitEntity != nullptr){
+			if (!hitEntity->IsOwnedByPlayer()) { //if its enemy then make turrets target it
+				for (int i = 0; i < selectedEntities.Num(); ++i) {
+					selectedEntities[i]->CommandTurretsTarget(hitActor);
+				}
 			}
 		}
 	}
 	else {
 		for (int i = 0; i < selectedEntities.Num(); ++i) {
 			AEntityPawn* entity = selectedEntities[i];
+			if(entity == nullptr) continue;
+
 			FVector actorOrgin, actorBoundsExtent;
 
 			entity->GetActorBounds(true, actorOrgin, actorBoundsExtent);
@@ -132,57 +148,74 @@ void AShipRTSController::MoveReleased()
 
 			DrawDebugSphere(GetWorld(), moveLocation, 50.0f, 16, FColor(255, 255, 255), false, 10.0f);
 		}
-		check(GEngine); GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, TEXT("Move Released at ") + hit.Location.ToCompactString());
+		check(GEngine); 
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, TEXT("Move Released at ") + hit.Location.ToCompactString());
 	}
 }
 
 void AShipRTSController::CameraMoveForward(float axisVal)
 {
 	if (axisVal == 0) {
-		currentCameraMovementVelocity.X = 0;
-		return;
+		if (currentCameraMovementVelocity.X < 0)
+			currentCameraMovementVelocity.X = 0;
+		else
+			currentCameraMovementVelocity.X -= cameraMovementAccScale.X * GetWorld()->GetDeltaSeconds();
 	}
-	if (currentCameraMovementVelocity.X < cameraMovementScale.X)
-		currentCameraMovementVelocity.X += cameraMovementAccScale.X * GetWorld()->GetDeltaSeconds();
+	else
+		if (currentCameraMovementVelocity.X < cameraMovementScale.X)
+			currentCameraMovementVelocity.X += cameraMovementAccScale.X * GetWorld()->GetDeltaSeconds();
 
 	const FVector cameraMovementVec = this->GetPawn()->GetActorLocation().ForwardVector;
 	const FRotator cameraRotation = this->GetPawn()->GetActorRotation();
 	const FVector movementDir = (cameraRotation.RotateVector(cameraMovementVec) * FVector { 1, 1, 0 }).GetSafeNormal();
 
-	const FVector newLocation = GetCameraMovementNewLocation(movementDir * axisVal * currentCameraMovementVelocity.X);
+	const FVector newLocation = GetCameraMovementNewLocation(
+		FVector(GetPawn()->GetActorLocation().Z / 100
+			* movementDir * axisVal
+			* currentCameraMovementVelocity.X).GetClampedToMaxSize(20000.0));
 	this->GetPawn()->SetActorLocation(newLocation);
 }
 
 void AShipRTSController::CameraMoveSide(float axisVal)
 {
 	if (axisVal == 0) {
-		currentCameraMovementVelocity.Y = 0;
-		return;
+		if (currentCameraMovementVelocity.Y < 0)
+			currentCameraMovementVelocity.Y = 0;
+		else
+			currentCameraMovementVelocity.Y -= cameraMovementAccScale.Y * GetWorld()->GetDeltaSeconds();
 	}
-	if (currentCameraMovementVelocity.Y < cameraMovementScale.Y)
-		currentCameraMovementVelocity.Y += cameraMovementAccScale.Y * GetWorld()->GetDeltaSeconds();
+	else
+		if (currentCameraMovementVelocity.Y < cameraMovementScale.Y)
+			currentCameraMovementVelocity.Y += cameraMovementAccScale.Y * GetWorld()->GetDeltaSeconds();
 
 	const FVector cameraMovementVec = this->GetPawn()->GetActorLocation().RightVector;
 	const FRotator cameraRotation = this->GetPawn()->GetActorRotation();
 	const FVector movementDir = (cameraRotation.RotateVector(cameraMovementVec) * FVector { 1, 1, 0 }).GetSafeNormal();
 
-	const FVector newLocation = GetCameraMovementNewLocation(movementDir * axisVal * currentCameraMovementVelocity.Y);
-	this->GetPawn()->SetActorLocation(newLocation);
+	const FVector newLocation = GetCameraMovementNewLocation(
+		FVector(GetPawn()->GetActorLocation().Z / 100
+			* movementDir * axisVal
+			* currentCameraMovementVelocity.Y).GetClampedToMaxSize(20000.0));	this->GetPawn()->SetActorLocation(newLocation);
 }
 
 void AShipRTSController::CameraMoveHeight(float axisVal)
 {
 	if (axisVal == 0) {
-		currentCameraMovementVelocity.Z = 0;
-		return;
+		if (currentCameraMovementVelocity.Z < 0)
+			currentCameraMovementVelocity.Z = 0;
+		else
+			currentCameraMovementVelocity.Z -= cameraMovementAccScale.Z * GetWorld()->GetDeltaSeconds();
 	}
-	//Acceleration feels weird for Z axis
-	//if (currentCameraMovementVelocity.Z < cameraMovementScale.Z)
-	//	currentCameraMovementVelocity.Z += cameraMovementAccScale.Z * GetWorld()->GetDeltaSeconds();
+	else
+		if (currentCameraMovementVelocity.Z < cameraMovementScale.Z)
+			currentCameraMovementVelocity.Z += cameraMovementAccScale.Z * GetWorld()->GetDeltaSeconds();
 
 	const FVector movementDir = this->GetPawn()->GetActorLocation().UpVector;
 
-	const FVector newLocation = GetCameraMovementNewLocation(movementDir * axisVal * cameraMovementAccScale.Z);
+	const FVector newLocation = GetCameraMovementNewLocation(
+		FVector(GetPawn()->GetActorLocation().Z / 100
+			* movementDir * axisVal
+			* cameraMovementAccScale.Z).GetClampedToMaxSize(20000.0));
 	this->GetPawn()->SetActorLocation(newLocation);
 }
 
